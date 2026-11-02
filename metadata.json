@@ -1,0 +1,6 @@
+{
+  "name": "Debian Silk OS - OpenKylin Desktop Experience",
+  "description": "Ambiente de desktop único baseado em Debian Linux com visual OpenKylin translúcido, efeitos acrílicos de desfoque, barra de tarefas altamente customizável e ecossistema de apps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
