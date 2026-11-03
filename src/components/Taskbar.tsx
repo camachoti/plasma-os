@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TaskbarSettings,
   WindowState,
@@ -39,7 +39,6 @@ interface TaskbarProps {
   onToggleTaskView: () => void;
   isTaskViewOpen: boolean;
   onShowDesktop: () => void;
-  currentTime: Date;
   onOpenTaskbarSettings: () => void;
   unreadNotificationsCount: number;
 }
@@ -63,12 +62,18 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onToggleTaskView,
   isTaskViewOpen,
   onShowDesktop,
-  currentTime,
   onOpenTaskbarSettings,
   unreadNotificationsCount,
 }) => {
   const [hoveredAppId, setHoveredAppId] = useState<string | null>(null);
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+
+  // Clock lives here so ticking re-renders only the taskbar, not the whole desktop
+  const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { isHorizontal, thickness, style } = computeTaskbarLayout(settings, isDark);
 
