@@ -133,9 +133,23 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   updateSizeRef.current = onUpdateWindowSize;
 
   useEffect(() => {
+    const endInteraction = () => {
+      if (!interactionRef.current) return;
+      interactionRef.current = null;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+
     const handleMove = (e: MouseEvent) => {
       const interaction = interactionRef.current;
       if (!interaction) return;
+
+      // Rede de segurança: se o mouseup se perdeu (soltou fora do iframe/app),
+      // e.buttons já vem 0 e o gesto precisa terminar aqui.
+      if (e.buttons === 0) {
+        endInteraction();
+        return;
+      }
 
       if (interaction.kind === 'drag') {
         const newX = Math.max(
@@ -165,38 +179,51 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
       let width = initialWidth;
       let height = initialHeight;
 
+      // Limites: a janela nunca fica maior que a área visível nem é cortada
+      // na borda (antes ela crescia para fora e o overflow a escondia).
       if (edge.includes('e')) {
-        width = Math.max(MIN_WINDOW_WIDTH, initialWidth + dx);
+        width = Math.min(
+          Math.max(MIN_WINDOW_WIDTH, initialWidth + dx),
+          window.innerWidth - initialX
+        );
       }
       if (edge.includes('s')) {
-        height = Math.max(MIN_WINDOW_HEIGHT, initialHeight + dy);
+        height = Math.min(
+          Math.max(MIN_WINDOW_HEIGHT, initialHeight + dy),
+          window.innerHeight - initialY
+        );
       }
       if (edge.includes('w')) {
-        width = Math.max(MIN_WINDOW_WIDTH, initialWidth - dx);
-        x = Math.max(0, initialX + initialWidth - width);
+        width = Math.min(
+          Math.max(MIN_WINDOW_WIDTH, initialWidth - dx),
+          initialX + initialWidth
+        );
+        x = initialX + initialWidth - width;
       }
       if (edge.includes('n')) {
-        height = Math.max(MIN_WINDOW_HEIGHT, initialHeight - dy);
-        y = Math.max(0, initialY + initialHeight - height);
+        height = Math.min(
+          Math.max(MIN_WINDOW_HEIGHT, initialHeight - dy),
+          initialY + initialHeight
+        );
+        y = initialY + initialHeight - height;
       }
 
       updateSizeRef.current(interaction.windowId, { x, y, width, height });
     };
 
-    const endInteraction = () => {
-      if (!interactionRef.current) return;
-      interactionRef.current = null;
-      document.body.style.userSelect = '';
-      document.body.style.cursor = '';
-    };
-
     window.addEventListener('mousemove', handleMove);
     window.addEventListener('mouseup', endInteraction);
+    window.addEventListener('pointerup', endInteraction);
+    window.addEventListener('pointercancel', endInteraction);
     window.addEventListener('blur', endInteraction);
+    document.addEventListener('visibilitychange', endInteraction);
     return () => {
       window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('mouseup', endInteraction);
+      window.removeEventListener('pointerup', endInteraction);
+      window.removeEventListener('pointercancel', endInteraction);
       window.removeEventListener('blur', endInteraction);
+      document.removeEventListener('visibilitychange', endInteraction);
     };
   }, []);
 
@@ -415,6 +442,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                 <div
                   key={edge}
                   aria-hidden="true"
+                  data-resize-edge={edge}
                   onMouseDown={(e) => handleMouseDownResize(e, win, edge)}
                   className="absolute z-10 transition-colors hover:bg-accent-soft"
                   style={handlePosition[edge]}
