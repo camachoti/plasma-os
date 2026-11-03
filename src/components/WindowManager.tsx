@@ -37,6 +37,11 @@ const getTitlebarIcon = (appId: string) => {
   }
 };
 
+type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
+const MIN_WINDOW_WIDTH = 320;
+const MIN_WINDOW_HEIGHT = 200;
+
 interface WindowManagerProps {
   windows: WindowState[];
   activeWindowId: string | null;
@@ -45,6 +50,10 @@ interface WindowManagerProps {
   onMinimizeWindow: (id: string) => void;
   onToggleMaximizeWindow: (id: string) => void;
   onUpdateWindowPos: (id: string, x: number, y: number) => void;
+  onUpdateWindowSize: (
+    id: string,
+    size: { x: number; y: number; width: number; height: number }
+  ) => void;
   taskbarSettings: TaskbarSettings;
   accentColor: string;
   isDark: boolean;
@@ -67,6 +76,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   onMinimizeWindow,
   onToggleMaximizeWindow,
   onUpdateWindowPos,
+  onUpdateWindowSize,
   taskbarSettings,
   accentColor,
   isDark,
@@ -88,6 +98,17 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
     initialY: number;
   } | null>(null);
 
+  const [resizeState, setResizeState] = useState<{
+    windowId: string;
+    edge: ResizeEdge;
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+    initialWidth: number;
+    initialHeight: number;
+  } | null>(null);
+
   const dragWindowRef = useRef<{ id: string; x: number; y: number } | null>(null);
 
   const handleMouseDownHeader = (e: React.MouseEvent, win: WindowState) => {
@@ -103,7 +124,56 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
     dragWindowRef.current = { id: win.id, x: win.x, y: win.y };
   };
 
+  const handleMouseDownResize = (e: React.MouseEvent, win: WindowState, edge: ResizeEdge) => {
+    e.stopPropagation();
+    if (win.isMaximized) return;
+    onFocusWindow(win.id);
+    setResizeState({
+      windowId: win.id,
+      edge,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: win.x,
+      initialY: win.y,
+      initialWidth: win.width,
+      initialHeight: win.height,
+    });
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (resizeState) {
+      const dx = e.clientX - resizeState.startX;
+      const dy = e.clientY - resizeState.startY;
+      const { edge, initialX, initialY, initialWidth, initialHeight } = resizeState;
+
+      let x = initialX;
+      let y = initialY;
+      let width = initialWidth;
+      let height = initialHeight;
+
+      if (edge.includes('e')) {
+        width = Math.max(MIN_WINDOW_WIDTH, initialWidth + dx);
+      }
+      if (edge.includes('s')) {
+        height = Math.max(MIN_WINDOW_HEIGHT, initialHeight + dy);
+      }
+      if (edge.includes('w')) {
+        width = Math.max(MIN_WINDOW_WIDTH, initialWidth - dx);
+        x = initialX + (initialWidth - width);
+      }
+      if (edge.includes('n')) {
+        height = Math.max(MIN_WINDOW_HEIGHT, initialHeight - dy);
+        y = initialY + (initialHeight - height);
+      }
+
+      // Keep the window reachable inside the viewport
+      x = Math.max(0, x);
+      y = Math.max(0, y);
+
+      onUpdateWindowSize(resizeState.windowId, { x, y, width, height });
+      return;
+    }
+
     if (!dragState) return;
     const deltaX = e.clientX - dragState.startX;
     const deltaY = e.clientY - dragState.startY;
@@ -117,6 +187,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
 
   const handleMouseUp = () => {
     setDragState(null);
+    setResizeState(null);
   };
 
   const renderAppContent = (win: WindowState) => {
@@ -193,9 +264,40 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
           };
         }
 
+        const resizeCursor = (edge: ResizeEdge) => {
+          switch (edge) {
+            case 'n':
+            case 's':
+              return 'cursor-ns-resize';
+            case 'e':
+            case 'w':
+              return 'cursor-ew-resize';
+            case 'ne':
+            case 'sw':
+              return 'cursor-nesw-resize';
+            case 'nw':
+            case 'se':
+              return 'cursor-nwse-resize';
+          }
+        };
+
+        const resizeHandles: ResizeEdge[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+        const handlePosition: Record<ResizeEdge, React.CSSProperties> = {
+          n: { top: 0, left: 8, right: 8, height: 5, cursor: 'ns-resize' },
+          s: { bottom: 0, left: 8, right: 8, height: 5, cursor: 'ns-resize' },
+          w: { left: 0, top: 8, bottom: 8, width: 5, cursor: 'ew-resize' },
+          e: { right: 0, top: 8, bottom: 8, width: 5, cursor: 'ew-resize' },
+          nw: { top: 0, left: 0, width: 12, height: 12, cursor: 'nwse-resize' },
+          ne: { top: 0, right: 0, width: 12, height: 12, cursor: 'nesw-resize' },
+          sw: { bottom: 0, left: 0, width: 12, height: 12, cursor: 'nesw-resize' },
+          se: { bottom: 0, right: 0, width: 12, height: 12, cursor: 'nwse-resize' },
+        };
+
         return (
           <div
             key={win.id}
+            role="dialog"
+            aria-label={win.title}
             onMouseDown={() => onFocusWindow(win.id)}
             className={`absolute pointer-events-auto flex flex-col rounded-xl overflow-hidden transition-[box-shadow,border-color] duration-150 border ${
               acrylicEnabled ? 'glass-acrylic' : ''
@@ -274,6 +376,18 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
             <div className="flex-1 overflow-hidden relative">
               {renderAppContent(win)}
             </div>
+
+            {/* Resize handles (hidden while maximized) */}
+            {!win.isMaximized &&
+              resizeHandles.map((edge) => (
+                <div
+                  key={edge}
+                  aria-hidden="true"
+                  onMouseDown={(e) => handleMouseDownResize(e, win, edge)}
+                  className={`absolute z-10 transition-colors ${resizeCursor(edge)} hover:bg-accent-soft`}
+                  style={handlePosition[edge]}
+                />
+              ))}
           </div>
         );
       })}

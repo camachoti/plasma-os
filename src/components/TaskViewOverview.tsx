@@ -22,6 +22,8 @@ export const TaskViewOverview: React.FC<TaskViewOverviewProps> = ({
 
   return (
     <div
+      role="dialog"
+      aria-label="Visão Geral das Tarefas"
       className="fixed inset-0 z-40 bg-black/60 backdrop-blur-2xl flex flex-col items-center justify-between p-12 select-none animate-in fade-in duration-150"
       onClick={onClose}
     >

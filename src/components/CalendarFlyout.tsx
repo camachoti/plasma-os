@@ -144,6 +144,8 @@ export const CalendarFlyout: React.FC<CalendarFlyoutProps> = ({
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       <div
+        role="dialog"
+        aria-label="Calendário do Sistema"
         className={`fixed z-50 w-76 rounded-2xl glass-acrylic p-3.5 shadow-2xl border select-none animate-in fade-in zoom-in-95 duration-100 ${
           isDock ? '' : panelAnchorClasses
         }`}
@@ -188,10 +190,16 @@ export const CalendarFlyout: React.FC<CalendarFlyoutProps> = ({
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <button className="p-1 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-colors">
+            <button
+              aria-label="Mês anterior"
+              className="p-1 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-colors"
+            >
               <IconChevronLeft className="w-3.5 h-3.5" />
             </button>
-            <button className="p-1 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-colors">
+            <button
+              aria-label="Próximo mês"
+              className="p-1 rounded-md hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 transition-colors"
+            >
               <IconChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>

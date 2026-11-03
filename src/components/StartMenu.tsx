@@ -234,7 +234,11 @@ export const StartMenu: React.FC<StartMenuProps> = ({
 
       {isExpanded ? (
         /* Fullscreen Launchpad Mode (Controlled by system setting) */
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-12 glass-acrylic bg-slate-950/85 animate-in fade-in zoom-in-95 duration-150">
+        <div
+          role="dialog"
+          aria-label="Menu Iniciar"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-between p-12 glass-acrylic bg-slate-950/85 animate-in fade-in zoom-in-95 duration-150"
+        >
           <div className="w-full max-w-4xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-white shadow">
@@ -312,6 +316,8 @@ export const StartMenu: React.FC<StartMenuProps> = ({
       ) : (
         /* Conventional Floating Window Menu */
         <div
+          role="dialog"
+          aria-label="Menu Iniciar"
           className="fixed z-50 w-[560px] h-[480px] rounded-2xl glass-acrylic p-4 shadow-2xl border flex flex-col select-none animate-in fade-in zoom-in-95 duration-100"
           style={{
             ...(taskbarMode === 'dock' ? dockPosStyle : panelAnchorStyle),

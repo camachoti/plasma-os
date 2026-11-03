@@ -170,6 +170,8 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       <div
+        role="dialog"
+        aria-label="Central de Notificações"
         className={`fixed z-50 w-84 max-h-[460px] flex flex-col rounded-2xl glass-acrylic p-3.5 shadow-2xl border select-none animate-in fade-in zoom-in-95 duration-100 ${
           isDock ? '' : panelAnchorClasses
         }`}

@@ -339,6 +339,15 @@ export default function App() {
     );
   };
 
+  const handleUpdateWindowSize = (
+    id: string,
+    size: { x: number; y: number; width: number; height: number }
+  ) => {
+    setWindows((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, ...size } : w))
+    );
+  };
+
   const handleShowDesktop = () => {
     const allMinimized = windows.every((w) => w.isMinimized);
     setWindows((prev) =>
@@ -415,6 +424,7 @@ export default function App() {
         onMinimizeWindow={handleMinimizeWindow}
         onToggleMaximizeWindow={handleToggleMaximizeWindow}
         onUpdateWindowPos={handleUpdateWindowPos}
+        onUpdateWindowSize={handleUpdateWindowSize}
         taskbarSettings={taskbarSettings}
         accentColor={accentColor}
         isDark={isDark}

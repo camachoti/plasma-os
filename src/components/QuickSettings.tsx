@@ -162,6 +162,8 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       <div
+        role="dialog"
+        aria-label="Central de Ações e Conexões"
         className={`fixed z-50 w-80 rounded-2xl glass-acrylic p-3.5 shadow-2xl border select-none animate-in fade-in zoom-in-95 duration-100 ${
           isDock ? '' : panelAnchorClasses
         }`}
@@ -311,11 +313,15 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsPlayingMusic(!isPlayingMusic)}
+              aria-label={isPlayingMusic ? 'Pausar música' : 'Reproduzir música'}
               className="p-1.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white transition-colors"
             >
               {isPlayingMusic ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 transition-colors">
+            <button
+              aria-label="Próxima faixa"
+              className="p-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 transition-colors"
+            >
               <SkipForward className="w-3 h-3" />
             </button>
           </div>

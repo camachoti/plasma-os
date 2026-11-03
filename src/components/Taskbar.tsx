@@ -202,6 +202,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           {/* Start Menu Button (Clean Monochrome Debian Swirl Badge) */}
           <button
             aria-label="Abrir Menu Iniciar Silk Debian"
+            aria-expanded={isStartMenuOpen}
             onClick={onToggleStartMenu}
             className={`relative p-1 rounded-xl transition-colors duration-150 flex items-center justify-center ${
               isStartMenuOpen
@@ -220,6 +221,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           {/* Task View / Overview (Tabler filled grid) */}
           <button
             aria-label="Visão de Tarefas (Exposé)"
+            aria-expanded={isTaskViewOpen}
             onClick={onToggleTaskView}
             className={`p-2 rounded-xl transition-colors duration-150 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white ${
               isTaskViewOpen ? 'bg-slate-200/80 dark:bg-white/20' : 'hover:bg-slate-200/50 dark:hover:bg-white/10'
@@ -322,6 +324,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           {/* Quick Settings Action Pill */}
           <button
             aria-label="Central de Ações e Conexões"
+            aria-expanded={isQuickSettingsOpen}
             onClick={onToggleQuickSettings}
             className={`flex items-center gap-1.5 px-2 py-1.5 rounded-xl transition-colors text-xs ${
               isQuickSettingsOpen
@@ -338,6 +341,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           {settings.showCalendar && (
             <button
               aria-label="Abrir Calendário do Sistema"
+              aria-expanded={isCalendarOpen}
               onClick={onToggleCalendar}
               className={`flex items-center justify-center px-2 py-1 rounded-xl transition-colors text-xs tabular-nums text-slate-800 dark:text-slate-200 ${
                 isCalendarOpen
@@ -353,6 +357,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           {/* Notifications button with Tabler filled bell */}
           <button
             aria-label="Central de Notificações"
+            aria-expanded={isNotificationsOpen}
             onClick={onToggleNotifications}
             className={`relative p-2 rounded-xl transition-colors text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white ${
               isNotificationsOpen ? 'bg-slate-200/80 dark:bg-white/20' : 'hover:bg-slate-200/50 dark:hover:bg-white/10'
