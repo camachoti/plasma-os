@@ -4,6 +4,7 @@ import {
   getTaskbarThickness,
   computeTaskbarLayout,
   calculateWindowSnap,
+  detectSnapTarget,
   executeDebianCommand,
   TaskbarSettings,
 } from './desktopConfig';
@@ -85,4 +86,21 @@ test('executeDebianCommand processes Debian commands correctly', () => {
 
   const clearRes = executeDebianCommand('clear');
   assert.equal(clearRes.clear, true);
+});
+
+test('detectSnapTarget triggers maximize at top and left/right at screen boundaries', () => {
+  // Top edge triggers maximize
+  assert.equal(detectSnapTarget(500, 10, 1440, 900), 'maximize');
+  assert.equal(detectSnapTarget(1000, 24, 1440, 900), 'maximize');
+
+  // Left edge triggers left snap
+  assert.equal(detectSnapTarget(10, 300, 1440, 900), 'left');
+  assert.equal(detectSnapTarget(24, 500, 1440, 900), 'left');
+
+  // Right edge triggers right snap
+  assert.equal(detectSnapTarget(1430, 300, 1440, 900), 'right');
+  assert.equal(detectSnapTarget(1440 - 24, 400, 1440, 900), 'right');
+
+  // Middle of screen triggers nothing
+  assert.equal(detectSnapTarget(500, 300, 1440, 900), null);
 });

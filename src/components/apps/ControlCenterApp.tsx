@@ -12,6 +12,7 @@ import {
   Monitor,
   LayoutGrid,
   Maximize2,
+  Volume2,
 } from 'lucide-react';
 import {
   TaskbarSettings,
@@ -22,6 +23,7 @@ import {
   BlurIntensity,
   DesktopIconSize,
 } from '../../utils/desktopConfig';
+import { soundEffects } from '../../utils/soundEffects';
 
 interface ControlCenterAppProps {
   settings: TaskbarSettings;
@@ -36,6 +38,10 @@ interface ControlCenterAppProps {
   onToggleAcrylic: () => void;
   desktopIconSize?: DesktopIconSize;
   onUpdateDesktopIconSize?: (size: DesktopIconSize) => void;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
+  soundVolume?: number;
+  onUpdateSoundVolume?: (volume: number) => void;
 }
 
 export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
@@ -51,8 +57,12 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
   onToggleAcrylic,
   desktopIconSize = 'medium',
   onUpdateDesktopIconSize,
+  soundEnabled = true,
+  onToggleSound,
+  soundVolume = 70,
+  onUpdateSoundVolume,
 }) => {
-  const [activeTab, setActiveTab] = useState<'taskbar' | 'wallpaper' | 'appearance' | 'system'>('taskbar');
+  const [activeTab, setActiveTab] = useState<'taskbar' | 'wallpaper' | 'appearance' | 'sound' | 'system'>('taskbar');
 
   return (
     <div className="flex h-full text-slate-800 dark:text-slate-100 select-none overflow-hidden text-xs">
@@ -97,6 +107,18 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
         >
           <Sparkles className="w-4 h-4" />
           <span>Aparência & Vidro</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('sound')}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
+            activeTab === 'sound'
+              ? 'bg-accent text-white font-semibold shadow-xs'
+              : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
+          }`}
+        >
+          <Volume2 className="w-4 h-4" />
+          <span>Sons & Áudio</span>
         </button>
 
         <button
@@ -562,7 +584,115 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
           </div>
         )}
 
-        {/* Tab 4: System */}
+        {/* Tab: Sound */}
+        {activeTab === 'sound' && (
+          <div className="max-w-2xl flex flex-col gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-0.5">
+                Efeitos Sonoros do Sistema
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Audiodesign sintetizado via Web Audio API (PipeWire/Silk Sound Engine). Feedback sutil e digno para ações do desktop.
+              </p>
+            </div>
+
+            {/* Toggle System Sounds */}
+            <div className="p-3.5 rounded-xl bg-white/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-xs flex items-center justify-between">
+              <div>
+                <h4 className="text-xs font-semibold text-slate-900 dark:text-white">Áudio do Sistema</h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  Emitir avisos sonoros para abertura/fechamento de janelas, cliques e notificações
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  onToggleSound?.();
+                  if (!soundEnabled) {
+                    soundEffects.play('toggle-on');
+                  }
+                }}
+                className={`py-1.5 px-3 rounded-lg text-xs font-medium transition-colors ${
+                  soundEnabled
+                    ? 'bg-accent text-white shadow-xs'
+                    : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-white/15'
+                }`}
+              >
+                {soundEnabled ? 'Ativado' : 'Silenciado'}
+              </button>
+            </div>
+
+            {/* Volume Slider */}
+            <div className="p-3.5 rounded-xl bg-white/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h4 className="text-xs font-semibold text-slate-900 dark:text-white">Volume dos Efeitos</h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                    Ajuste o ganho master dos sinos e cliques acústicos
+                  </p>
+                </div>
+                <span className="font-mono text-xs text-slate-700 dark:text-slate-300 font-bold">
+                  {soundVolume}%
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Volume2 className="w-4 h-4 text-slate-400" />
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={soundVolume}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    onUpdateSoundVolume?.(v);
+                  }}
+                  onMouseUp={() => soundEffects.play('click')}
+                  className="flex-1 accent-accent h-1.5 rounded-lg cursor-pointer bg-slate-200 dark:bg-slate-700"
+                />
+              </div>
+            </div>
+
+            {/* Sound Samples Grid */}
+            <div className="p-3.5 rounded-xl bg-white/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col gap-2.5">
+              <div>
+                <h4 className="text-xs font-semibold text-slate-900 dark:text-white">Demonstração de Efeitos</h4>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  Clique para escutar e validar os tons sintetizados em tempo real
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: 'notif', label: 'Notificação do Sistema', desc: 'Sino harmônico duplo (F5 / A5)', fn: () => soundEffects.play('notification') },
+                  { id: 'open', label: 'Abertura de Janela', desc: 'Timbre ascendente suave de vidro', fn: () => soundEffects.play('window-open') },
+                  { id: 'close', label: 'Fechamento de Janela', desc: 'Tom descendente discreto', fn: () => soundEffects.play('window-close') },
+                  { id: 'snap', label: 'Encaixe Magnético (Snap)', desc: 'Pulso mecânico com ressonância', fn: () => soundEffects.play('window-snap') },
+                  { id: 'minimize', label: 'Minimização', desc: 'Translação de frequência descendente', fn: () => soundEffects.play('window-minimize') },
+                  { id: 'restore', label: 'Restauração', desc: 'Translação de frequência ascendente', fn: () => soundEffects.play('window-restore') },
+                  { id: 'click', label: 'Clique Tátil', desc: 'Micro-tick de interação de interface', fn: () => soundEffects.play('click') },
+                  { id: 'trash', label: 'Descarte / Lixeira', desc: 'Ruído filtrado suave de descarte', fn: () => soundEffects.play('trash') },
+                ].map((sample) => (
+                  <button
+                    key={sample.id}
+                    onClick={sample.fn}
+                    className="flex flex-col text-left p-2.5 rounded-lg border border-slate-200/80 dark:border-white/10 hover:bg-slate-100/80 dark:hover:bg-white/5 active:scale-[0.98] transition-all group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-slate-900 dark:text-white group-hover:text-accent transition-colors">
+                        {sample.label}
+                      </span>
+                      <span className="text-[10px] text-slate-400">Ouvir</span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      {sample.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 5: System */}
         {activeTab === 'system' && (
           <div className="max-w-2xl flex flex-col gap-4">
             <div>

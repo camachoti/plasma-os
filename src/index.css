@@ -60,6 +60,39 @@
 }
 
 /* ============================================================
+   Window Smooth Transitions (Debian Silk / Wayland Compositor)
+   Scale and opacity transitions for opening, minimizing, and closing
+   ============================================================ */
+@keyframes windowOpen {
+  0% {
+    opacity: 0;
+    transform: scale(0.93) translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.window-anim-open {
+  animation: windowOpen 190ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.window-transition-smooth {
+  transition:
+    transform 210ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    left 210ms cubic-bezier(0.16, 1, 0.3, 1),
+    top 210ms cubic-bezier(0.16, 1, 0.3, 1),
+    width 210ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 210ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    visibility 210ms;
+  will-change: transform, opacity;
+}
+
+/* ============================================================
    Accent color system — driven by --accent-color (set from App.tsx)
    so the "Cor de Destaque" picker actually themes the whole UI.
    ============================================================ */

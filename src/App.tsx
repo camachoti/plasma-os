@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   TaskbarSettings,
   WindowState,
+  SnapTarget,
   WALLPAPERS,
   ACCENT_COLORS,
   DesktopIconSize,
@@ -20,6 +21,7 @@ import { WindowManager } from './components/WindowManager';
 import { DesktopIcons } from './components/DesktopIcons';
 import { DesktopContextMenu } from './components/DesktopContextMenu';
 import { TaskViewOverview } from './components/TaskViewOverview';
+import { AltTabSwitcher } from './components/AltTabSwitcher';
 
 // Persisted desktop preferences (survive reloads)
 const SETTINGS_KEY = 'debian-silk:settings';
@@ -160,6 +162,10 @@ export default function App() {
   const [desktopContextMenu, setDesktopContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [selectedDesktopIcon, setSelectedDesktopIcon] = useState<string | null>(null);
 
+  // Alt + Tab Switcher HUD state
+  const [isAltTabOpen, setIsAltTabOpen] = useState(false);
+  const [altTabSelectedIndex, setAltTabSelectedIndex] = useState(0);
+
   // Screenshot flash effect state
   const [screenshotFlash, setScreenshotFlash] = useState(false);
 
@@ -220,21 +226,7 @@ export default function App() {
     document.documentElement.style.setProperty('--accent-color', accentColor);
   }, [accentColor]);
 
-  // Keyboard shortcut handler
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsStartMenuOpen(false);
-        setIsQuickSettingsOpen(false);
-        setIsCalendarOpen(false);
-        setIsNotificationsOpen(false);
-        setIsTaskViewOpen(false);
-        setDesktopContextMenu(null);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+
 
   // Window actions
   const handleOpenApp = (appId: string) => {
@@ -329,7 +321,71 @@ export default function App() {
 
   const handleToggleMaximizeWindow = (id: string) => {
     setWindows((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, isMaximized: !w.isMaximized } : w))
+      prev.map((w) => {
+        if (w.id !== id) return w;
+        if (w.isMaximized || w.snappedSide) {
+          return {
+            ...w,
+            isMaximized: false,
+            snappedSide: null,
+            ...(w.prevRect ? w.prevRect : {}),
+          };
+        }
+        return {
+          ...w,
+          isMaximized: true,
+          snappedSide: null,
+          prevRect: { x: w.x, y: w.y, width: w.width, height: w.height },
+        };
+      })
+    );
+  };
+
+  const handleSnapWindow = (id: string, side: SnapTarget) => {
+    setWindows((prev) =>
+      prev.map((w) => {
+        if (w.id !== id) return w;
+        const prevRect = w.prevRect || {
+          x: w.x,
+          y: w.y,
+          width: w.width,
+          height: w.height,
+        };
+        if (side === 'maximize') {
+          return {
+            ...w,
+            isMaximized: true,
+            snappedSide: null,
+            prevRect,
+            isMinimized: false,
+            zIndex: nextZIndex,
+          };
+        }
+        return {
+          ...w,
+          isMaximized: false,
+          snappedSide: side,
+          prevRect,
+          isMinimized: false,
+          zIndex: nextZIndex,
+        };
+      })
+    );
+    setActiveWindowId(id);
+    setNextZIndex((z) => z + 1);
+  };
+
+  const handleRestoreWindow = (id: string) => {
+    setWindows((prev) =>
+      prev.map((w) => {
+        if (w.id !== id) return w;
+        return {
+          ...w,
+          isMaximized: false,
+          snappedSide: null,
+          ...(w.prevRect ? w.prevRect : {}),
+        };
+      })
     );
   };
 
@@ -357,6 +413,136 @@ export default function App() {
       setActiveWindowId(null);
     }
   };
+
+  // Synchronization refs for global keyboard shortcut listeners
+  const windowsRef = useRef(windows);
+  windowsRef.current = windows;
+  const activeWindowIdRef = useRef(activeWindowId);
+  activeWindowIdRef.current = activeWindowId;
+  const isAltTabOpenRef = useRef(isAltTabOpen);
+  isAltTabOpenRef.current = isAltTabOpen;
+  const altTabSelectedIndexRef = useRef(altTabSelectedIndex);
+  altTabSelectedIndexRef.current = altTabSelectedIndex;
+
+  // Global Linux / UKUI Desktop Keyboard Shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 1. Escape: Dismiss active popovers or cancel AltTab
+      if (e.key === 'Escape') {
+        if (isAltTabOpenRef.current) {
+          setIsAltTabOpen(false);
+          return;
+        }
+        setIsStartMenuOpen(false);
+        setIsQuickSettingsOpen(false);
+        setIsCalendarOpen(false);
+        setIsNotificationsOpen(false);
+        setIsTaskViewOpen(false);
+        setDesktopContextMenu(null);
+        return;
+      }
+
+      // 2. Alt + Tab (and Ctrl + Tab as safe web container equivalent)
+      if ((e.altKey || e.ctrlKey) && e.key === 'Tab') {
+        e.preventDefault();
+        e.stopPropagation();
+        const wins = windowsRef.current;
+        if (wins.length === 0) return;
+
+        if (!isAltTabOpenRef.current) {
+          const currentIdx = wins.findIndex((w) => w.id === activeWindowIdRef.current);
+          const nextIdx = e.shiftKey
+            ? (currentIdx - 1 + wins.length) % wins.length
+            : (currentIdx + 1) % wins.length;
+          setAltTabSelectedIndex(nextIdx);
+          setIsAltTabOpen(true);
+        } else {
+          const nextIdx = e.shiftKey
+            ? (altTabSelectedIndexRef.current - 1 + wins.length) % wins.length
+            : (altTabSelectedIndexRef.current + 1) % wins.length;
+          setAltTabSelectedIndex(nextIdx);
+        }
+        return;
+      }
+
+      // 3. Super / Meta: Toggle Start Menu
+      if (e.key === 'Meta' && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+        setIsStartMenuOpen((prev) => !prev);
+        setIsQuickSettingsOpen(false);
+        setIsCalendarOpen(false);
+        setIsNotificationsOpen(false);
+        return;
+      }
+
+      // 4. Super + D: Toggle Show Desktop
+      if (e.metaKey && (e.key === 'd' || e.key === 'D')) {
+        e.preventDefault();
+        handleShowDesktop();
+        return;
+      }
+
+      // 5. Super + Tab: Toggle Task View Overview
+      if (e.metaKey && e.key === 'Tab') {
+        e.preventDefault();
+        setIsTaskViewOpen((prev) => !prev);
+        return;
+      }
+
+      // 6. Super + Arrow Keys for window tiling/snapping
+      if (e.metaKey && activeWindowIdRef.current) {
+        const curId = activeWindowIdRef.current;
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          handleSnapWindow(curId, 'maximize');
+          return;
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          const win = windowsRef.current.find((w) => w.id === curId);
+          if (win && (win.isMaximized || win.snappedSide)) {
+            handleRestoreWindow(curId);
+          } else {
+            handleMinimizeWindow(curId);
+          }
+          return;
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handleSnapWindow(curId, 'left');
+          return;
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleSnapWindow(curId, 'right');
+          return;
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      // When Alt (or Ctrl) is released, close switcher and focus selected window
+      if ((e.key === 'Alt' || e.key === 'Control') && isAltTabOpenRef.current) {
+        setIsAltTabOpen(false);
+        const wins = windowsRef.current;
+        const targetWin = wins[altTabSelectedIndexRef.current];
+        if (targetWin) {
+          handleFocusWindow(targetWin.id);
+          if (targetWin.isMinimized) {
+            setWindows((prev) =>
+              prev.map((w) => (w.id === targetWin.id ? { ...w, isMinimized: false } : w))
+            );
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('keyup', handleKeyUp, true);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('keyup', handleKeyUp, true);
+    };
+  }, []);
 
   const handleTakeScreenshot = () => {
     setScreenshotFlash(true);
@@ -423,6 +609,8 @@ export default function App() {
         onCloseWindow={handleCloseWindow}
         onMinimizeWindow={handleMinimizeWindow}
         onToggleMaximizeWindow={handleToggleMaximizeWindow}
+        onSnapWindow={handleSnapWindow}
+        onRestoreWindow={handleRestoreWindow}
         onUpdateWindowPos={handleUpdateWindowPos}
         onUpdateWindowSize={handleUpdateWindowSize}
         taskbarSettings={taskbarSettings}
@@ -540,6 +728,26 @@ export default function App() {
         onSelectWindow={handleFocusWindow}
         onCloseWindow={handleCloseWindow}
         accentColor={accentColor}
+      />
+
+      {/* Alt + Tab Switcher HUD */}
+      <AltTabSwitcher
+        isOpen={isAltTabOpen}
+        windows={windows}
+        selectedIndex={altTabSelectedIndex}
+        onSelectIndex={setAltTabSelectedIndex}
+        onConfirm={(id) => {
+          setIsAltTabOpen(false);
+          handleFocusWindow(id);
+          const win = windows.find((w) => w.id === id);
+          if (win && win.isMinimized) {
+            setWindows((prev) =>
+              prev.map((w) => (w.id === id ? { ...w, isMinimized: false } : w))
+            );
+          }
+        }}
+        onClose={() => setIsAltTabOpen(false)}
+        isDark={isDark}
       />
 
       {/* Context Menu */}

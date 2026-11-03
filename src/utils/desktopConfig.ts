@@ -31,6 +31,8 @@ export interface TaskbarSettings {
   iconGlow: boolean;
 }
 
+export type SnapTarget = 'left' | 'right' | 'maximize';
+
 export interface WindowState {
   id: string;
   appId: string;
@@ -43,6 +45,7 @@ export interface WindowState {
   isMinimized: boolean;
   isMaximized: boolean;
   snappedSide?: 'left' | 'right' | null;
+  prevRect?: { x: number; y: number; width: number; height: number };
   zIndex: number;
 }
 
@@ -193,6 +196,28 @@ export function calculateWindowSnap(
     width: Math.floor(availableWidth / 2) - 3,
     height: availableHeight,
   };
+}
+
+/**
+ * Detects whether cursor position triggers Aero Snap zone (top, left, right edge)
+ */
+export function detectSnapTarget(
+  clientX: number,
+  clientY: number,
+  screenWidth: number,
+  _screenHeight: number,
+  threshold: number = 24
+): SnapTarget | null {
+  if (clientY <= threshold) {
+    return 'maximize';
+  }
+  if (clientX <= threshold) {
+    return 'left';
+  }
+  if (clientX >= screenWidth - threshold) {
+    return 'right';
+  }
+  return null;
 }
 
 /**

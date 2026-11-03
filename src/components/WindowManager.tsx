@@ -1,8 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   WindowState,
   TaskbarSettings,
   calculateWindowSnap,
+  detectSnapTarget,
+  SnapTarget,
   DesktopIconSize,
 } from '../utils/desktopConfig';
 import { Minus, Square, X, Copy } from 'lucide-react';
@@ -19,6 +21,7 @@ import { TerminalApp } from './apps/TerminalApp';
 import { FileManagerApp } from './apps/FileManagerApp';
 import { AppStoreApp } from './apps/AppStoreApp';
 import { SystemMonitorApp } from './apps/SystemMonitorApp';
+import { soundEffects } from '../utils/soundEffects';
 
 const getTitlebarIcon = (appId: string) => {
   switch (appId) {
@@ -83,6 +86,8 @@ interface WindowManagerProps {
   onCloseWindow: (id: string) => void;
   onMinimizeWindow: (id: string) => void;
   onToggleMaximizeWindow: (id: string) => void;
+  onSnapWindow: (id: string, side: SnapTarget) => void;
+  onRestoreWindow: (id: string) => void;
   onUpdateWindowPos: (id: string, x: number, y: number) => void;
   onUpdateWindowSize: (
     id: string,
@@ -100,6 +105,10 @@ interface WindowManagerProps {
   onToggleAcrylic: () => void;
   desktopIconSize?: DesktopIconSize;
   onUpdateDesktopIconSize?: (size: DesktopIconSize) => void;
+  soundEnabled?: boolean;
+  onToggleSound?: () => void;
+  soundVolume?: number;
+  onUpdateSoundVolume?: (vol: number) => void;
 }
 
 export const WindowManager: React.FC<WindowManagerProps> = ({
@@ -109,6 +118,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   onCloseWindow,
   onMinimizeWindow,
   onToggleMaximizeWindow,
+  onSnapWindow,
+  onRestoreWindow,
   onUpdateWindowPos,
   onUpdateWindowSize,
   taskbarSettings,
@@ -123,19 +134,73 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   onToggleAcrylic,
   desktopIconSize = 'medium',
   onUpdateDesktopIconSize,
+  soundEnabled = true,
+  onToggleSound,
+  soundVolume = 70,
+  onUpdateSoundVolume,
 }) => {
   // A interação (arrastar/redimensionar) vive num ref e os listeners ficam no document:
   // assim o mouse pode sair da janela e ser solto sobre o desktop sem travar o estado.
   const interactionRef = useRef<Interaction | null>(null);
   const updatePosRef = useRef(onUpdateWindowPos);
   const updateSizeRef = useRef(onUpdateWindowSize);
+  const onSnapWindowRef = useRef(onSnapWindow);
   updatePosRef.current = onUpdateWindowPos;
   updateSizeRef.current = onUpdateWindowSize;
+  onSnapWindowRef.current = onSnapWindow;
+
+  // Aero Snap Translucent Preview Zone
+  const [activeSnapPreview, setActiveSnapPreview] = useState<SnapTarget | null>(null);
+  const activeSnapPreviewRef = useRef<SnapTarget | null>(null);
+
+  // Active interaction window state (disables CSS transitions immediately during drag/resize)
+  const [activeInteractionWinId, setActiveInteractionWinId] = useState<string | null>(null);
+
+  // Smooth window close transition state
+  const [closingIds, setClosingIds] = useState<string[]>([]);
+  const onCloseWindowRef = useRef(onCloseWindow);
+  onCloseWindowRef.current = onCloseWindow;
+
+  // Track windows executing entrance animation
+  const [openingIds, setOpeningIds] = useState<string[]>(() => windows.map((w) => w.id));
+  const knownWindowsRef = useRef<Set<string>>(new Set(windows.map((w) => w.id)));
+
+  useEffect(() => {
+    const newIds: string[] = [];
+    for (const w of windows) {
+      if (!knownWindowsRef.current.has(w.id)) {
+        knownWindowsRef.current.add(w.id);
+        newIds.push(w.id);
+      }
+    }
+    if (newIds.length > 0) {
+      setOpeningIds((prev) => [...prev, ...newIds]);
+    }
+  }, [windows]);
+
+  const handleRequestClose = (id: string) => {
+    if (closingIds.includes(id)) return;
+    setClosingIds((prev) => [...prev, id]);
+    setTimeout(() => {
+      setClosingIds((prev) => prev.filter((item) => item !== id));
+      onCloseWindowRef.current(id);
+    }, 180);
+  };
 
   useEffect(() => {
     const endInteraction = () => {
-      if (!interactionRef.current) return;
+      const interaction = interactionRef.current;
+      const snap = activeSnapPreviewRef.current;
+
+      // If dragging and dropped in a snap zone, execute Aero Snap!
+      if (interaction && interaction.kind === 'drag' && snap) {
+        onSnapWindowRef.current(interaction.windowId, snap);
+      }
+
+      activeSnapPreviewRef.current = null;
+      setActiveSnapPreview(null);
       interactionRef.current = null;
+      setActiveInteractionWinId(null);
       document.body.style.userSelect = '';
       document.body.style.cursor = '';
     };
@@ -152,6 +217,19 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
       }
 
       if (interaction.kind === 'drag') {
+        // Detect Aero Snap border proximity
+        const snap = detectSnapTarget(
+          e.clientX,
+          e.clientY,
+          window.innerWidth,
+          window.innerHeight,
+          24
+        );
+        if (snap !== activeSnapPreviewRef.current) {
+          activeSnapPreviewRef.current = snap;
+          setActiveSnapPreview(snap);
+        }
+
         const newX = Math.max(
           0,
           Math.min(
@@ -229,14 +307,57 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
 
   const beginInteraction = (interaction: Interaction, cursor: string) => {
     interactionRef.current = interaction;
+    setActiveInteractionWinId(interaction.windowId);
     document.body.style.userSelect = 'none';
     document.body.style.cursor = cursor;
   };
 
   const handleMouseDownHeader = (e: React.MouseEvent, win: WindowState) => {
-    if (win.isMaximized || e.button !== 0) return;
+    if (e.button !== 0) return;
     e.preventDefault();
     onFocusWindow(win.id);
+
+    // If window is currently maximized or snapped to an edge, restore cleanly
+    // and center the header right under the cursor so dragging is seamless!
+    if (win.isMaximized || win.snappedSide) {
+      const restoredWidth =
+        win.prevRect?.width || Math.min(740, Math.floor(window.innerWidth * 0.65));
+      const restoredHeight =
+        win.prevRect?.height || Math.min(500, Math.floor(window.innerHeight * 0.65));
+      const restoredX = Math.max(
+        0,
+        Math.min(
+          window.innerWidth - restoredWidth,
+          e.clientX - Math.floor(restoredWidth / 2)
+        )
+      );
+      const restoredY = Math.max(
+        0,
+        Math.min(window.innerHeight - 80, Math.max(10, e.clientY - 18))
+      );
+
+      onUpdateWindowSize(win.id, {
+        x: restoredX,
+        y: restoredY,
+        width: restoredWidth,
+        height: restoredHeight,
+      });
+      onRestoreWindow(win.id);
+
+      beginInteraction(
+        {
+          kind: 'drag',
+          windowId: win.id,
+          startX: e.clientX,
+          startY: e.clientY,
+          initialX: restoredX,
+          initialY: restoredY,
+        },
+        'move'
+      );
+      return;
+    }
+
     beginInteraction(
       {
         kind: 'drag',
@@ -252,7 +373,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
 
   const handleMouseDownResize = (e: React.MouseEvent, win: WindowState, edge: ResizeEdge) => {
     e.stopPropagation();
-    if (win.isMaximized || e.button !== 0) return;
+    if (win.isMaximized || win.snappedSide || e.button !== 0) return;
     e.preventDefault();
     onFocusWindow(win.id);
     beginInteraction(
@@ -310,12 +431,17 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
       {windows.map((win) => {
-        if (win.isMinimized) return null;
-        const isActive = win.id === activeWindowId;
+        const isClosing = closingIds.includes(win.id);
+        const isMinimized = win.isMinimized;
+        const isOpening = openingIds.includes(win.id);
+        const isInteracting =
+          activeInteractionWinId === win.id || interactionRef.current?.windowId === win.id;
+        const isActive = win.id === activeWindowId && !isMinimized && !isClosing;
 
-        let styleObj: React.CSSProperties = {
-          zIndex: win.zIndex,
-        };
+        let targetX = win.x;
+        let targetY = win.y;
+        let targetWidth = win.width;
+        let targetHeight = win.height;
 
         if (win.isMaximized) {
           const snap = calculateWindowSnap(
@@ -326,20 +452,52 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
             52,
             taskbarSettings.mode === 'dock'
           );
-          styleObj = {
-            ...styleObj,
-            transform: `translate3d(${snap.x}px, ${snap.y}px, 0)`,
-            width: `${snap.width}px`,
-            height: `${snap.height}px`,
-          };
-        } else {
-          styleObj = {
-            ...styleObj,
-            transform: `translate3d(${win.x}px, ${win.y}px, 0)`,
-            width: `${win.width}px`,
-            height: `${win.height}px`,
-          };
+          targetX = snap.x;
+          targetY = snap.y;
+          targetWidth = snap.width;
+          targetHeight = snap.height;
+        } else if (win.snappedSide) {
+          const snap = calculateWindowSnap(
+            win.snappedSide,
+            window.innerWidth,
+            window.innerHeight,
+            taskbarSettings.position,
+            52,
+            taskbarSettings.mode === 'dock'
+          );
+          targetX = snap.x;
+          targetY = snap.y;
+          targetWidth = snap.width;
+          targetHeight = snap.height;
         }
+
+        let transformStr = 'scale(1) translateY(0)';
+        let opacityVal = 1;
+        let pointerEventsVal: React.CSSProperties['pointerEvents'] = 'auto';
+        let visibilityVal: React.CSSProperties['visibility'] = 'visible';
+
+        if (isMinimized) {
+          transformStr = 'scale(0.88) translateY(28px)';
+          opacityVal = 0;
+          pointerEventsVal = 'none';
+          visibilityVal = 'hidden';
+        } else if (isClosing) {
+          transformStr = 'scale(0.92) translateY(10px)';
+          opacityVal = 0;
+          pointerEventsVal = 'none';
+        }
+
+        const styleObj: React.CSSProperties = {
+          zIndex: win.zIndex,
+          left: `${targetX}px`,
+          top: `${targetY}px`,
+          width: `${targetWidth}px`,
+          height: `${targetHeight}px`,
+          transform: transformStr,
+          opacity: opacityVal,
+          pointerEvents: pointerEventsVal,
+          visibility: visibilityVal,
+        };
 
         const handlePosition: Record<ResizeEdge, React.CSSProperties> = {
           n: { top: 0, left: 8, right: 8, height: 5, cursor: RESIZE_CURSOR.n },
@@ -352,14 +510,24 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
           se: { bottom: 0, right: 0, width: 12, height: 12, cursor: RESIZE_CURSOR.se },
         };
 
+        const isRestorable = win.isMaximized || !!win.snappedSide;
+
         return (
           <div
             key={win.id}
             role="dialog"
             aria-label={win.title}
+            aria-hidden={isMinimized || isClosing ? true : undefined}
             onMouseDown={() => onFocusWindow(win.id)}
-            className={`absolute pointer-events-auto flex flex-col rounded-xl overflow-hidden transition-[box-shadow,border-color] duration-150 border ${
+            onAnimationEnd={(e) => {
+              if (e.animationName === 'windowOpen') {
+                setOpeningIds((prev) => prev.filter((id) => id !== win.id));
+              }
+            }}
+            className={`absolute flex flex-col rounded-xl overflow-hidden border ${
               acrylicEnabled ? 'glass-acrylic' : ''
+            } ${!isInteracting ? 'window-transition-smooth' : ''} ${
+              isOpening && !isMinimized && !isClosing ? 'window-anim-open' : ''
             }`}
             style={{
               ...styleObj,
@@ -381,7 +549,13 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
             {/* Window Title Bar (Authentic OpenKylin / Linux Desktop) */}
             <div
               onMouseDown={(e) => handleMouseDownHeader(e, win)}
-              onDoubleClick={() => onToggleMaximizeWindow(win.id)}
+              onDoubleClick={() => {
+                if (win.snappedSide) {
+                  onRestoreWindow(win.id);
+                } else {
+                  onToggleMaximizeWindow(win.id);
+                }
+              }}
               className="h-9 px-3 flex items-center justify-between border-b border-slate-200/80 dark:border-white/10 cursor-move select-none shrink-0"
               style={{
                 backgroundColor: isDark ? 'rgba(0, 0, 0, 0.22)' : 'rgba(241, 245, 249, 0.85)',
@@ -409,19 +583,25 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
                   <Minus className="w-3 h-3" />
                 </button>
                 <button
-                  onClick={() => onToggleMaximizeWindow(win.id)}
-                  aria-label={win.isMaximized ? 'Restaurar janela' : 'Maximizar janela'}
+                  onClick={() => {
+                    if (win.snappedSide) {
+                      onRestoreWindow(win.id);
+                    } else {
+                      onToggleMaximizeWindow(win.id);
+                    }
+                  }}
+                  aria-label={isRestorable ? 'Restaurar janela' : 'Maximizar janela'}
                   className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-slate-200/80 dark:hover:bg-white/10 active:scale-95 transition-colors text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-                  title={win.isMaximized ? 'Restaurar' : 'Maximizar'}
+                  title={isRestorable ? 'Restaurar' : 'Maximizar'}
                 >
-                  {win.isMaximized ? (
+                  {isRestorable ? (
                     <Copy className="w-3 h-3" />
                   ) : (
                     <Square className="w-2.5 h-2.5" />
                   )}
                 </button>
                 <button
-                  onClick={() => onCloseWindow(win.id)}
+                  onClick={() => handleRequestClose(win.id)}
                   aria-label="Fechar janela"
                   className="w-6 h-6 rounded-md flex items-center justify-center hover:bg-rose-600 active:scale-95 transition-colors text-slate-600 hover:text-white dark:text-slate-300 dark:hover:text-white"
                   title="Fechar"
@@ -436,8 +616,8 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
               {renderAppContent(win)}
             </div>
 
-            {/* Resize handles (hidden while maximized) */}
-            {!win.isMaximized &&
+            {/* Resize handles (hidden while maximized, edge-snapped, minimized or closing) */}
+            {!win.isMaximized && !win.snappedSide && !isMinimized && !isClosing &&
               RESIZE_HANDLES.map((edge) => (
                 <div
                   key={edge}
@@ -451,6 +631,36 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
           </div>
         );
       })}
+
+      {/* Aero Snap Translucent Preview Overlay */}
+      {activeSnapPreview && (() => {
+        const snapGeom = calculateWindowSnap(
+          activeSnapPreview,
+          window.innerWidth,
+          window.innerHeight,
+          taskbarSettings.position,
+          52,
+          taskbarSettings.mode === 'dock'
+        );
+        return (
+          <div
+            aria-hidden="true"
+            data-testid="aero-snap-preview"
+            className="fixed pointer-events-none rounded-2xl transition-all duration-150 ease-out z-15 border-2 border-accent/80"
+            style={{
+              left: `${snapGeom.x}px`,
+              top: `${snapGeom.y}px`,
+              width: `${snapGeom.width}px`,
+              height: `${snapGeom.height}px`,
+              backgroundColor: isDark ? 'rgba(37, 99, 235, 0.16)' : 'rgba(37, 99, 235, 0.12)',
+              backdropFilter: 'blur(16px) saturate(140%)',
+              boxShadow: '0 0 35px rgba(37, 99, 235, 0.35), inset 0 0 25px rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <div className="absolute inset-2 rounded-xl border border-white/25 border-dashed" />
+          </div>
+        );
+      })()}
     </div>
   );
 };
