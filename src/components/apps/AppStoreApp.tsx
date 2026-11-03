@@ -22,7 +22,7 @@ export const AppStoreApp: React.FC<{ accentColor: string }> = ({ accentColor }) 
       rating: 4.9,
       size: '95 MB',
       installed: true,
-      iconBg: 'bg-blue-600',
+      iconBg: 'bg-accent',
     },
     {
       id: 'gimp',
@@ -117,8 +117,7 @@ export const AppStoreApp: React.FC<{ accentColor: string }> = ({ accentColor }) 
             type="text"
             placeholder="Buscar pacotes deb..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-3 py-1.5 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 w-56"
+            onChange={(e) => setSearchQuery(e.target.value)}              className="pl-9 pr-3 py-1.5 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-accent w-56"
           />
         </div>
       </div>
@@ -162,7 +161,7 @@ export const AppStoreApp: React.FC<{ accentColor: string }> = ({ accentColor }) 
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-colors text-xs ${
                     pkg.installed
                       ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-300 border border-rose-500/20'
-                      : 'bg-blue-600 hover:bg-blue-500 text-white shadow-xs'
+                      : 'bg-accent hover:bg-accent-hover text-white shadow-xs'
                   }`}
                 >
                   {isBusy ? (

@@ -59,6 +59,69 @@
   box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.12), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
 }
 
+/* ============================================================
+   Accent color system — driven by --accent-color (set from App.tsx)
+   so the "Cor de Destaque" picker actually themes the whole UI.
+   ============================================================ */
+@utility bg-accent {
+  background-color: var(--accent-color);
+}
+
+@utility bg-accent-hover {
+  background-color: color-mix(in srgb, var(--accent-color) 85%, #ffffff);
+}
+
+@utility bg-accent-soft {
+  background-color: color-mix(in srgb, var(--accent-color) 14%, transparent);
+}
+
+@utility bg-accent-strong {
+  background-color: color-mix(in srgb, var(--accent-color) 28%, transparent);
+}
+
+@utility bg-accent-tint {
+  background-color: color-mix(in srgb, var(--accent-color) 35%, transparent);
+}
+
+@utility text-accent {
+  color: var(--accent-color);
+}
+
+@utility border-accent {
+  border-color: var(--accent-color);
+}
+
+@utility border-accent-soft {
+  border-color: color-mix(in srgb, var(--accent-color) 35%, transparent);
+}
+
+@utility ring-accent {
+  --tw-ring-color: var(--accent-color);
+}
+
+/* Native form controls (range, checkbox) */
+@utility accent-accent {
+  accent-color: var(--accent-color);
+}
+
+/* Visible keyboard focus ring, themed by the accent color */
+:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Respect the OS "reduce motion" preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

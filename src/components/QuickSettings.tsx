@@ -162,6 +162,8 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       <div
+        role="dialog"
+        aria-label="Central de Ações e Conexões"
         className={`fixed z-50 w-80 rounded-2xl glass-acrylic p-3.5 shadow-2xl border select-none animate-in fade-in zoom-in-95 duration-100 ${
           isDock ? '' : panelAnchorClasses
         }`}
@@ -190,7 +192,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
             onClick={() => setWifiEnabled(!wifiEnabled)}
             className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors text-xs ${
               wifiEnabled
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-accent text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10'
             }`}
           >
@@ -204,7 +206,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
             onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
             className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors text-xs ${
               bluetoothEnabled
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-accent text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10'
             }`}
           >
@@ -228,7 +230,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
             onClick={onToggleAcrylic}
             className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors text-xs ${
               acrylicEnabled
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-accent text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10'
             }`}
           >
@@ -277,7 +279,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
               max="100"
               value={brightness}
               onChange={(e) => setBrightness(Number(e.target.value))}
-              className="flex-1 accent-blue-600 h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
+              className="flex-1 accent-accent h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
             />
             <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 w-7 text-right">{brightness}%</span>
           </div>
@@ -291,7 +293,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
               max="100"
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              className="flex-1 accent-blue-600 h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
+              className="flex-1 accent-accent h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
             />
             <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 w-7 text-right">{volume}%</span>
           </div>
@@ -300,7 +302,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
         {/* Media Player */}
         <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/20 border border-slate-200/80 dark:border-white/5 flex items-center justify-between mb-3">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/10 dark:bg-slate-700 flex items-center justify-center text-blue-600 dark:text-slate-200 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-accent-soft dark:bg-slate-700 flex items-center justify-center text-accent dark:text-slate-200 shrink-0">
               <Music className="w-4 h-4" />
             </div>
             <div className="min-w-0">
@@ -311,11 +313,15 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsPlayingMusic(!isPlayingMusic)}
+              aria-label={isPlayingMusic ? 'Pausar música' : 'Reproduzir música'}
               className="p-1.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 dark:bg-white/10 dark:hover:bg-white/20 text-slate-800 dark:text-white transition-colors"
             >
               {isPlayingMusic ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
             </button>
-            <button className="p-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 transition-colors">
+            <button
+              aria-label="Próxima faixa"
+              className="p-1.5 rounded-lg hover:bg-slate-200/80 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 transition-colors"
+            >
               <SkipForward className="w-3 h-3" />
             </button>
           </div>

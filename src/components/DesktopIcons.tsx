@@ -99,6 +99,8 @@ export const DesktopIcons: React.FC<DesktopIconsProps> = ({
         return (
           <button
             key={item.id}
+            aria-label={item.name}
+            aria-pressed={isSelected}
             onClick={(e) => {
               e.stopPropagation();
               onSelect(item.id);
@@ -107,9 +109,17 @@ export const DesktopIcons: React.FC<DesktopIconsProps> = ({
               e.stopPropagation();
               onOpenApp(item.appId);
             }}
+            onKeyDown={(e) => {
+              // Keyboard equivalent of the double-click open gesture
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect(item.id);
+                onOpenApp(item.appId);
+              }
+            }}
             className={`group flex flex-col items-center justify-center ${sizeConfig.tileClass} rounded-xl transition-all duration-150 text-center select-none ${
               isSelected
-                ? 'bg-blue-600/35 backdrop-blur-md ring-1.5 ring-blue-400/80'
+                ? 'bg-accent-tint backdrop-blur-md ring-1.5 ring-accent'
                 : 'hover:bg-white/10 active:bg-white/15'
             }`}
           >

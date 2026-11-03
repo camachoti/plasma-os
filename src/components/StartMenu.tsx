@@ -234,7 +234,11 @@ export const StartMenu: React.FC<StartMenuProps> = ({
 
       {isExpanded ? (
         /* Fullscreen Launchpad Mode (Controlled by system setting) */
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-between p-12 glass-acrylic bg-slate-950/85 animate-in fade-in zoom-in-95 duration-150">
+        <div
+          role="dialog"
+          aria-label="Menu Iniciar"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-between p-12 glass-acrylic bg-slate-950/85 animate-in fade-in zoom-in-95 duration-150"
+        >
           <div className="w-full max-w-4xl flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-white shadow">
@@ -273,7 +277,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
               placeholder="Buscar aplicativos ou configurações..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-white/15 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-md"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-white/15 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent backdrop-blur-md"
             />
           </div>
 
@@ -312,6 +316,8 @@ export const StartMenu: React.FC<StartMenuProps> = ({
       ) : (
         /* Conventional Floating Window Menu */
         <div
+          role="dialog"
+          aria-label="Menu Iniciar"
           className="fixed z-50 w-[560px] h-[480px] rounded-2xl glass-acrylic p-4 shadow-2xl border flex flex-col select-none animate-in fade-in zoom-in-95 duration-100"
           style={{
             ...(taskbarMode === 'dock' ? dockPosStyle : panelAnchorStyle),
@@ -334,7 +340,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                 placeholder="Pesquisar aplicativos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
           </div>
@@ -354,7 +360,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                     onClick={() => setSelectedCategory(cat)}
                     className={`text-left text-xs px-2 py-1.5 rounded-lg transition-colors font-medium ${
                       isActive
-                        ? 'bg-blue-600/15 border border-blue-500/30 text-blue-700 dark:text-white dark:bg-blue-600/30 dark:border-transparent font-semibold'
+                        ? 'bg-accent-soft border border-accent-soft text-slate-900 dark:text-white dark:bg-accent-strong dark:border-transparent font-semibold'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                     }`}
                   >
@@ -394,7 +400,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
           {/* Footer: User profile + System controls */}
           <div className="pt-2.5 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+              <div className="w-7 h-7 rounded-full bg-accent text-white font-bold text-xs flex items-center justify-center">
                 D
               </div>
               <div>

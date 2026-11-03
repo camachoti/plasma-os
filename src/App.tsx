@@ -21,7 +21,67 @@ import { DesktopIcons } from './components/DesktopIcons';
 import { DesktopContextMenu } from './components/DesktopContextMenu';
 import { TaskViewOverview } from './components/TaskViewOverview';
 
+// Persisted desktop preferences (survive reloads)
+const SETTINGS_KEY = 'debian-silk:settings';
+
+interface PersistedSettings {
+  taskbarSettings?: Partial<TaskbarSettings>;
+  currentWallpaper?: string;
+  accentColor?: string;
+  isDark?: boolean;
+  acrylicEnabled?: boolean;
+  desktopIconSize?: DesktopIconSize;
+}
+
+function isOneOf<T extends string>(value: unknown, options: readonly T[]): value is T {
+  return typeof value === 'string' && (options as readonly string[]).includes(value);
+}
+
+function sanitizeTaskbarSettings(raw: unknown): Partial<TaskbarSettings> {
+  if (typeof raw !== 'object' || raw === null) return {};
+  const src = raw as Record<string, unknown>;
+  const clean: Partial<TaskbarSettings> = {};
+
+  if (isOneOf(src.position, ['top', 'bottom', 'left', 'right'])) clean.position = src.position;
+  if (isOneOf(src.mode, ['dock', 'panel'])) clean.mode = src.mode;
+  if (isOneOf(src.startMenuMode, ['conventional', 'expanded'])) clean.startMenuMode = src.startMenuMode;
+  if (isOneOf(src.size, ['compact', 'standard', 'large'])) clean.size = src.size;
+  if (isOneOf(src.blur, ['none', 'subtle', 'medium', 'ultra'])) clean.blur = src.blur;
+  if (typeof src.opacity === 'number' && src.opacity >= 20 && src.opacity <= 100) {
+    clean.opacity = src.opacity;
+  }
+  for (const flag of [
+    'autoHide',
+    'centeredIcons',
+    'showDesktopButton',
+    'showSeconds',
+    'showCalendar',
+    'showQuickSettings',
+    'iconGlow',
+  ] as const) {
+    if (typeof src[flag] === 'boolean') clean[flag] = src[flag];
+  }
+  return clean;
+}
+
+function loadPersistedSettings(): PersistedSettings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      ...parsed,
+      taskbarSettings: sanitizeTaskbarSettings(parsed.taskbarSettings),
+    };
+  } catch {
+    // Corrupted or inaccessible storage: fall back to defaults
+    return {};
+  }
+}
+
 export default function App() {
+  const [persisted] = useState<PersistedSettings>(loadPersistedSettings);
+
   // Desktop Taskbar Customization State
   const [taskbarSettings, setTaskbarSettings] = useState<TaskbarSettings>({
     position: 'bottom',
@@ -37,17 +97,25 @@ export default function App() {
     showCalendar: true,
     showQuickSettings: true,
     iconGlow: false,
+    ...persisted.taskbarSettings,
   });
 
-  // Wallpaper & Theme state - Dignified default
-  const [currentWallpaper, setCurrentWallpaper] = useState<string>(WALLPAPERS[0].path);
-  const [accentColor, setAccentColor] = useState<string>(ACCENT_COLORS[0].hex);
-  const [isDark, setIsDark] = useState<boolean>(true);
-  const [acrylicEnabled, setAcrylicEnabled] = useState<boolean>(true);
-  const [desktopIconSize, setDesktopIconSize] = useState<DesktopIconSize>('medium');
-
-  // Time & Clock state
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  // Wallpaper & Theme state - Dignified default (validated against known values)
+  const [currentWallpaper, setCurrentWallpaper] = useState<string>(() =>
+    WALLPAPERS.some((wp) => wp.path === persisted.currentWallpaper)
+      ? persisted.currentWallpaper!
+      : WALLPAPERS[0].path
+  );
+  const [accentColor, setAccentColor] = useState<string>(() =>
+    ACCENT_COLORS.some((col) => col.hex === persisted.accentColor)
+      ? persisted.accentColor!
+      : ACCENT_COLORS[0].hex
+  );
+  const [isDark, setIsDark] = useState<boolean>(persisted.isDark ?? true);
+  const [acrylicEnabled, setAcrylicEnabled] = useState<boolean>(persisted.acrylicEnabled ?? true);
+  const [desktopIconSize, setDesktopIconSize] = useState<DesktopIconSize>(
+    persisted.desktopIconSize ?? 'medium'
+  );
 
   // Window Management State
   const [windows, setWindows] = useState<WindowState[]>([
@@ -120,13 +188,22 @@ export default function App() {
     },
   ]);
 
-  // Update clock every second
+  // Persist preferences whenever they change
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    const settings: PersistedSettings = {
+      taskbarSettings,
+      currentWallpaper,
+      accentColor,
+      isDark,
+      acrylicEnabled,
+      desktopIconSize,
+    };
+    try {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    } catch {
+      // Storage full or blocked: preferences simply won't persist
+    }
+  }, [taskbarSettings, currentWallpaper, accentColor, isDark, acrylicEnabled, desktopIconSize]);
 
   // Update root dark class when theme toggles
   useEffect(() => {
@@ -136,6 +213,12 @@ export default function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
+
+  // Publish the selected accent color as a CSS variable so every
+  // bg-accent / text-accent / border-accent utility follows it
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent-color', accentColor);
+  }, [accentColor]);
 
   // Keyboard shortcut handler
   useEffect(() => {
@@ -256,6 +339,15 @@ export default function App() {
     );
   };
 
+  const handleUpdateWindowSize = (
+    id: string,
+    size: { x: number; y: number; width: number; height: number }
+  ) => {
+    setWindows((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, ...size } : w))
+    );
+  };
+
   const handleShowDesktop = () => {
     const allMinimized = windows.every((w) => w.isMinimized);
     setWindows((prev) =>
@@ -332,6 +424,7 @@ export default function App() {
         onMinimizeWindow={handleMinimizeWindow}
         onToggleMaximizeWindow={handleToggleMaximizeWindow}
         onUpdateWindowPos={handleUpdateWindowPos}
+        onUpdateWindowSize={handleUpdateWindowSize}
         taskbarSettings={taskbarSettings}
         accentColor={accentColor}
         isDark={isDark}
@@ -386,7 +479,6 @@ export default function App() {
         onToggleTaskView={() => setIsTaskViewOpen(!isTaskViewOpen)}
         isTaskViewOpen={isTaskViewOpen}
         onShowDesktop={handleShowDesktop}
-        currentTime={currentTime}
         onOpenTaskbarSettings={() => handleOpenApp('settings')}
         unreadNotificationsCount={notifications.length}
       />

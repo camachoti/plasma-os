@@ -78,7 +78,7 @@ export const DesktopContextMenu: React.FC<DesktopContextMenuProps> = ({
                 onClick={() => onUpdateDesktopIconSize(size)}
                 className={`py-1 text-[11px] rounded-md font-medium text-center transition-colors ${
                   isSelected
-                    ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                    ? 'bg-accent text-white font-semibold shadow-xs'
                     : 'hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300'
                 }`}
               >

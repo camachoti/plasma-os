@@ -67,7 +67,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
           onClick={() => setActiveTab('taskbar')}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'taskbar'
-              ? 'bg-blue-600 text-white font-semibold shadow-xs'
+              ? 'bg-accent text-white font-semibold shadow-xs'
               : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
           }`}
         >
@@ -79,7 +79,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
           onClick={() => setActiveTab('wallpaper')}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'wallpaper'
-              ? 'bg-blue-600 text-white font-semibold shadow-xs'
+              ? 'bg-accent text-white font-semibold shadow-xs'
               : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
           }`}
         >
@@ -91,7 +91,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
           onClick={() => setActiveTab('appearance')}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'appearance'
-              ? 'bg-blue-600 text-white font-semibold shadow-xs'
+              ? 'bg-accent text-white font-semibold shadow-xs'
               : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
           }`}
         >
@@ -103,7 +103,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
           onClick={() => setActiveTab('system')}
           className={`flex items-center gap-2 px-3 py-2 rounded-lg font-medium transition-colors ${
             activeTab === 'system'
-              ? 'bg-blue-600 text-white font-semibold shadow-xs'
+              ? 'bg-accent text-white font-semibold shadow-xs'
               : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-white/5 dark:hover:text-white'
           }`}
         >
@@ -136,11 +136,11 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                   onClick={() => onUpdateSettings({ mode: 'dock' })}
                   className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
                     settings.mode === 'dock'
-                      ? 'bg-blue-500/10 border-blue-500 text-blue-900 dark:text-white dark:bg-blue-600/20'
+                      ? 'bg-accent-soft border-accent text-slate-900 dark:text-white dark:bg-accent-strong'
                       : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-white/5'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-300 shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center text-accent shrink-0">
                     <Layout className="w-4 h-4" />
                   </div>
                   <div>
@@ -155,7 +155,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                   onClick={() => onUpdateSettings({ mode: 'panel' })}
                   className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
                     settings.mode === 'panel'
-                      ? 'bg-blue-500/10 border-blue-500 text-blue-900 dark:text-white dark:bg-blue-600/20'
+                      ? 'bg-accent-soft border-accent text-slate-900 dark:text-white dark:bg-accent-strong'
                       : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-white/5'
                   }`}
                 >
@@ -182,11 +182,11 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                   onClick={() => onUpdateSettings({ startMenuMode: 'conventional' })}
                   className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
                     settings.startMenuMode === 'conventional'
-                      ? 'bg-blue-500/10 border-blue-500 text-blue-900 dark:text-white dark:bg-blue-600/20'
+                      ? 'bg-accent-soft border-accent text-slate-900 dark:text-white dark:bg-accent-strong'
                       : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-white/5'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-300 shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-accent-soft flex items-center justify-center text-accent shrink-0">
                     <LayoutGrid className="w-4 h-4" />
                   </div>
                   <div>
@@ -200,11 +200,10 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                 <button
                   onClick={() => onUpdateSettings({ startMenuMode: 'expanded' })}
                   className={`flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
-                    settings.startMenuMode === 'expanded'
-                      ? 'bg-blue-500/10 border-blue-500 text-blue-900 dark:text-white dark:bg-blue-600/20'
-                      : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-white/5'
-                  }`}
-                >
+                    settings.startMenuMode === 'expanded'                          ? 'bg-accent-soft border-accent text-slate-900 dark:text-white dark:bg-accent-strong'
+                          : 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-white/5'
+                      }`}
+                    >
                   <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-600 dark:text-indigo-300 shrink-0">
                     <Maximize2 className="w-4 h-4" />
                   </div>
@@ -238,7 +237,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                       onClick={() => onUpdateSettings({ position: pos })}
                       className={`py-2 px-3 rounded-lg border text-xs font-medium transition-colors ${
                         isSelected
-                          ? 'bg-blue-600 border-blue-600 text-white font-semibold shadow-xs'
+                          ? 'bg-accent border-accent text-white font-semibold shadow-xs'
                           : 'border-slate-200 hover:bg-slate-100 text-slate-700 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5'
                       }`}
                     >
@@ -263,7 +262,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                 max="100"
                 value={settings.opacity}
                 onChange={(e) => onUpdateSettings({ opacity: Number(e.target.value) })}
-                className="w-full h-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 accent-blue-600 cursor-pointer"
+                className="w-full h-1.5 rounded-lg bg-slate-200 dark:bg-slate-700 accent-accent cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400">
                 <span>Translúcido</span>
@@ -291,7 +290,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                     onClick={() => onUpdateSettings({ blur: b.id as BlurIntensity })}
                     className={`py-1.5 px-2 rounded-lg border text-xs font-medium transition-colors ${
                       settings.blur === b.id
-                        ? 'bg-blue-600 border-blue-600 text-white font-semibold shadow-xs'
+                        ? 'bg-accent border-accent text-white font-semibold shadow-xs'
                         : 'border-slate-200 hover:bg-slate-100 text-slate-700 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5'
                     }`}
                   >
@@ -319,7 +318,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                     onClick={() => onUpdateSettings({ size: s.id as TaskbarSize })}
                     className={`py-1.5 px-2.5 rounded-lg border text-xs font-medium transition-colors ${
                       settings.size === s.id
-                        ? 'bg-blue-600 border-blue-600 text-white font-semibold shadow-xs'
+                        ? 'bg-accent border-accent text-white font-semibold shadow-xs'
                         : 'border-slate-200 hover:bg-slate-100 text-slate-700 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5'
                     }`}
                   >
@@ -341,7 +340,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                   type="checkbox"
                   checked={settings.centeredIcons}
                   onChange={(e) => onUpdateSettings({ centeredIcons: e.target.checked })}
-                  className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
+                  className="w-4 h-4 accent-accent rounded cursor-pointer"
                 />
               </label>
 
@@ -351,7 +350,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                   type="checkbox"
                   checked={settings.showDesktopButton}
                   onChange={(e) => onUpdateSettings({ showDesktopButton: e.target.checked })}
-                  className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
+                  className="w-4 h-4 accent-accent rounded cursor-pointer"
                 />
               </label>
 
@@ -361,7 +360,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                   type="checkbox"
                   checked={settings.showSeconds}
                   onChange={(e) => onUpdateSettings({ showSeconds: e.target.checked })}
-                  className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
+                  className="w-4 h-4 accent-accent rounded cursor-pointer"
                 />
               </label>
             </div>
@@ -389,7 +388,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                     onClick={() => onSelectWallpaper(wp.path)}
                     className={`group relative rounded-xl overflow-hidden border cursor-pointer transition-all shadow-xs ${
                       isSelected
-                        ? 'border-blue-500 ring-2 ring-blue-500/50 shadow-md'
+                        ? 'border-accent ring-2 ring-accent shadow-md'
                         : 'border-slate-200 dark:border-white/10 hover:border-slate-400 dark:hover:border-white/25'
                     }`}
                   >
@@ -410,7 +409,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                           </span>
                         </div>
                         {isSelected && (
-                          <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-white">
+                          <div className="w-5 h-5 rounded-full bg-accent flex items-center justify-center text-white">
                             <Check className="w-3 h-3" />
                           </div>
                         )}
@@ -487,7 +486,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                       onClick={() => onSelectAccentColor(col.hex)}
                       className={`flex items-center gap-2.5 p-2 rounded-lg border transition-colors text-left ${
                         isSelected
-                          ? 'bg-blue-50/80 border-blue-400 dark:bg-white/10 dark:border-white/30 font-semibold'
+                          ? 'bg-accent-soft border-accent dark:bg-white/10 dark:border-white/30 font-semibold'
                           : 'border-slate-200 dark:border-white/10 hover:bg-slate-100 text-slate-700 dark:text-slate-300 dark:hover:bg-white/5'
                       }`}
                     >
@@ -518,7 +517,7 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                 onClick={onToggleAcrylic}
                 className={`py-1.5 px-3 rounded-lg text-xs font-medium transition-colors ${
                   acrylicEnabled
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-accent text-white shadow-xs'
                     : 'bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-white/15'
                 }`}
               >
@@ -547,12 +546,12 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
                       onClick={() => onUpdateDesktopIconSize?.(sz.id as DesktopIconSize)}
                       className={`flex flex-col items-center justify-center py-2 px-3 rounded-lg border transition-colors ${
                         isSelected
-                          ? 'bg-blue-600 border-blue-600 text-white font-semibold shadow-xs'
+                          ? 'bg-accent border-accent text-white font-semibold shadow-xs'
                           : 'border-slate-200 hover:bg-slate-100 text-slate-700 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/5'
                       }`}
                     >
                       <span className="text-xs">{sz.label}</span>
-                      <span className={`text-[10px] ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
+                      <span className={`text-[10px] ${isSelected ? 'text-white/80' : 'text-slate-400'}`}>
                         {sz.desc}
                       </span>
                     </button>
@@ -575,43 +574,56 @@ export const ControlCenterApp: React.FC<ControlCenterAppProps> = ({
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-white/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-xs flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-rose-700 flex items-center justify-center shadow-md">
-                <Shield className="w-7 h-7 text-white" />
+            <div className="p-4 rounded-xl bg-white/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-xs flex items-center gap-4 overflow-hidden">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#e01a5b] to-[#a80030] flex items-center justify-center shadow-md ring-1 ring-[#d70a53]/25 dark:ring-white/10">
+                <Shield className="w-7 h-7 text-white drop-shadow-sm" />
               </div>
               <div>
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">Debian GNU/Linux 13 (Trixie)</h4>
                 <p className="text-xs text-slate-600 dark:text-slate-300">
                   Ambiente Desktop Silk (UKUI 4.2 / Wayland)
                 </p>
-                <div className="flex gap-2 mt-1 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-                  <span>Kernel 6.12.9-amd64</span>
-                  <span>·</span>
-                  <span>x86_64</span>
+                <div className="flex gap-2 mt-1 text-[11px] text-slate-600 dark:text-slate-400 font-mono">
+                  <span className="px-1.5 py-0.5 rounded bg-[#d70a53]/10 text-[#c00748] dark:text-[#ff5c8a] font-medium">
+                    Kernel 6.12.9-amd64
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-slate-500/10 text-slate-600 dark:text-slate-400 font-medium">
+                    x86_64
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-white/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-xs flex flex-col gap-1.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-200/60 dark:border-white/5">
-                <span className="text-slate-500 dark:text-slate-400">Processador</span>
-                <span className="text-slate-800 dark:text-slate-200 font-medium">AMD Ryzen 7 7840HS (16 vCPUs @ 5.1GHz)</span>
+            <div className="rounded-xl bg-white/90 dark:bg-white/5 border border-slate-200/80 dark:border-white/10 shadow-xs overflow-hidden text-xs">
+              <div className="px-3.5 py-2 bg-slate-100/80 dark:bg-white/[0.04] border-b border-slate-200/80 dark:border-white/10 flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Detalhes do Sistema
+                </span>
+                <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                  ThinkStation P-Series
+                </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-200/60 dark:border-white/5">
-                <span className="text-slate-500 dark:text-slate-400">Gráficos</span>
-                <span className="text-slate-800 dark:text-slate-200 font-medium">AMD Radeon 780M</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200/60 dark:border-white/5">
-                <span className="text-slate-500 dark:text-slate-400">Memória</span>
-                <span className="text-slate-800 dark:text-slate-200 font-medium">16.0 GB RAM</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200/60 dark:border-white/5">
-                <span className="text-slate-500 dark:text-slate-400">Disco</span>
-                <span className="text-slate-800 dark:text-slate-200 font-medium">512 GB SSD (38 GB usados)</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500 dark:text-slate-400">Ambiente Gráfico</span>
-                <span className="text-slate-800 dark:text-slate-200 font-mono font-medium">Silk-Shell v4.2.1-debian</span>
+              <div className="flex flex-col">
+                <div className="px-3.5 py-1.5 flex justify-between items-baseline gap-4 border-b border-slate-200/60 dark:border-white/5 even:bg-slate-50/70 dark:even:bg-white/[0.02]">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">Processador</span>
+                  <span className="text-slate-900 dark:text-white font-semibold text-right">AMD Ryzen 7 7840HS (16 vCPUs @ 5.1GHz)</span>
+                </div>
+                <div className="px-3.5 py-1.5 flex justify-between items-baseline gap-4 border-b border-slate-200/60 dark:border-white/5 even:bg-slate-50/70 dark:even:bg-white/[0.02]">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">Gráficos</span>
+                  <span className="text-slate-900 dark:text-white font-semibold text-right">AMD Radeon 780M</span>
+                </div>
+                <div className="px-3.5 py-1.5 flex justify-between items-baseline gap-4 border-b border-slate-200/60 dark:border-white/5 even:bg-slate-50/70 dark:even:bg-white/[0.02]">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">Memória</span>
+                  <span className="text-slate-900 dark:text-white font-semibold text-right">16.0 GB RAM</span>
+                </div>
+                <div className="px-3.5 py-1.5 flex justify-between items-baseline gap-4 border-b border-slate-200/60 dark:border-white/5 even:bg-slate-50/70 dark:even:bg-white/[0.02]">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">Disco</span>
+                  <span className="text-slate-900 dark:text-white font-semibold text-right">512 GB SSD (38 GB usados)</span>
+                </div>
+                <div className="px-3.5 py-1.5 flex justify-between items-baseline gap-4 even:bg-slate-50/70 dark:even:bg-white/[0.02]">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium shrink-0">Ambiente Gráfico</span>
+                  <span className="text-slate-900 dark:text-white font-mono font-semibold text-right">Silk-Shell v4.2.1-debian</span>
+                </div>
               </div>
             </div>
           </div>

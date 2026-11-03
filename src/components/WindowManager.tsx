@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   WindowState,
   TaskbarSettings,
@@ -37,6 +37,45 @@ const getTitlebarIcon = (appId: string) => {
   }
 };
 
+type ResizeEdge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+
+const MIN_WINDOW_WIDTH = 320;
+const MIN_WINDOW_HEIGHT = 200;
+
+const RESIZE_CURSOR: Record<ResizeEdge, string> = {
+  n: 'ns-resize',
+  s: 'ns-resize',
+  e: 'ew-resize',
+  w: 'ew-resize',
+  ne: 'nesw-resize',
+  sw: 'nesw-resize',
+  nw: 'nwse-resize',
+  se: 'nwse-resize',
+};
+
+const RESIZE_HANDLES: ResizeEdge[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
+
+type Interaction =
+  | {
+      kind: 'drag';
+      windowId: string;
+      startX: number;
+      startY: number;
+      initialX: number;
+      initialY: number;
+    }
+  | {
+      kind: 'resize';
+      windowId: string;
+      edge: ResizeEdge;
+      startX: number;
+      startY: number;
+      initialX: number;
+      initialY: number;
+      initialWidth: number;
+      initialHeight: number;
+    };
+
 interface WindowManagerProps {
   windows: WindowState[];
   activeWindowId: string | null;
@@ -45,6 +84,10 @@ interface WindowManagerProps {
   onMinimizeWindow: (id: string) => void;
   onToggleMaximizeWindow: (id: string) => void;
   onUpdateWindowPos: (id: string, x: number, y: number) => void;
+  onUpdateWindowSize: (
+    id: string,
+    size: { x: number; y: number; width: number; height: number }
+  ) => void;
   taskbarSettings: TaskbarSettings;
   accentColor: string;
   isDark: boolean;
@@ -67,6 +110,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   onMinimizeWindow,
   onToggleMaximizeWindow,
   onUpdateWindowPos,
+  onUpdateWindowSize,
   taskbarSettings,
   accentColor,
   isDark,
@@ -80,43 +124,151 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   desktopIconSize = 'medium',
   onUpdateDesktopIconSize,
 }) => {
-  const [dragState, setDragState] = useState<{
-    windowId: string;
-    startX: number;
-    startY: number;
-    initialX: number;
-    initialY: number;
-  } | null>(null);
+  // A interação (arrastar/redimensionar) vive num ref e os listeners ficam no document:
+  // assim o mouse pode sair da janela e ser solto sobre o desktop sem travar o estado.
+  const interactionRef = useRef<Interaction | null>(null);
+  const updatePosRef = useRef(onUpdateWindowPos);
+  const updateSizeRef = useRef(onUpdateWindowSize);
+  updatePosRef.current = onUpdateWindowPos;
+  updateSizeRef.current = onUpdateWindowSize;
 
-  const dragWindowRef = useRef<{ id: string; x: number; y: number } | null>(null);
+  useEffect(() => {
+    const endInteraction = () => {
+      if (!interactionRef.current) return;
+      interactionRef.current = null;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+    };
+
+    const handleMove = (e: MouseEvent) => {
+      const interaction = interactionRef.current;
+      if (!interaction) return;
+
+      // Rede de segurança: se o mouseup se perdeu (soltou fora do iframe/app),
+      // e.buttons já vem 0 e o gesto precisa terminar aqui.
+      if (e.buttons === 0) {
+        endInteraction();
+        return;
+      }
+
+      if (interaction.kind === 'drag') {
+        const newX = Math.max(
+          0,
+          Math.min(
+            window.innerWidth - 100,
+            interaction.initialX + (e.clientX - interaction.startX)
+          )
+        );
+        const newY = Math.max(
+          0,
+          Math.min(
+            window.innerHeight - 80,
+            interaction.initialY + (e.clientY - interaction.startY)
+          )
+        );
+        updatePosRef.current(interaction.windowId, newX, newY);
+        return;
+      }
+
+      const dx = e.clientX - interaction.startX;
+      const dy = e.clientY - interaction.startY;
+      const { edge, initialX, initialY, initialWidth, initialHeight } = interaction;
+
+      let x = initialX;
+      let y = initialY;
+      let width = initialWidth;
+      let height = initialHeight;
+
+      // Limites: a janela nunca fica maior que a área visível nem é cortada
+      // na borda (antes ela crescia para fora e o overflow a escondia).
+      if (edge.includes('e')) {
+        width = Math.min(
+          Math.max(MIN_WINDOW_WIDTH, initialWidth + dx),
+          window.innerWidth - initialX
+        );
+      }
+      if (edge.includes('s')) {
+        height = Math.min(
+          Math.max(MIN_WINDOW_HEIGHT, initialHeight + dy),
+          window.innerHeight - initialY
+        );
+      }
+      if (edge.includes('w')) {
+        width = Math.min(
+          Math.max(MIN_WINDOW_WIDTH, initialWidth - dx),
+          initialX + initialWidth
+        );
+        x = initialX + initialWidth - width;
+      }
+      if (edge.includes('n')) {
+        height = Math.min(
+          Math.max(MIN_WINDOW_HEIGHT, initialHeight - dy),
+          initialY + initialHeight
+        );
+        y = initialY + initialHeight - height;
+      }
+
+      updateSizeRef.current(interaction.windowId, { x, y, width, height });
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', endInteraction);
+    window.addEventListener('pointerup', endInteraction);
+    window.addEventListener('pointercancel', endInteraction);
+    window.addEventListener('blur', endInteraction);
+    document.addEventListener('visibilitychange', endInteraction);
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', endInteraction);
+      window.removeEventListener('pointerup', endInteraction);
+      window.removeEventListener('pointercancel', endInteraction);
+      window.removeEventListener('blur', endInteraction);
+      document.removeEventListener('visibilitychange', endInteraction);
+    };
+  }, []);
+
+  const beginInteraction = (interaction: Interaction, cursor: string) => {
+    interactionRef.current = interaction;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = cursor;
+  };
 
   const handleMouseDownHeader = (e: React.MouseEvent, win: WindowState) => {
-    if (win.isMaximized) return;
+    if (win.isMaximized || e.button !== 0) return;
+    e.preventDefault();
     onFocusWindow(win.id);
-    setDragState({
-      windowId: win.id,
-      startX: e.clientX,
-      startY: e.clientY,
-      initialX: win.x,
-      initialY: win.y,
-    });
-    dragWindowRef.current = { id: win.id, x: win.x, y: win.y };
+    beginInteraction(
+      {
+        kind: 'drag',
+        windowId: win.id,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialX: win.x,
+        initialY: win.y,
+      },
+      'move'
+    );
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!dragState) return;
-    const deltaX = e.clientX - dragState.startX;
-    const deltaY = e.clientY - dragState.startY;
-
-    const newX = Math.max(0, Math.min(window.innerWidth - 100, dragState.initialX + deltaX));
-    const newY = Math.max(0, Math.min(window.innerHeight - 80, dragState.initialY + deltaY));
-
-    dragWindowRef.current = { id: dragState.windowId, x: newX, y: newY };
-    onUpdateWindowPos(dragState.windowId, newX, newY);
-  };
-
-  const handleMouseUp = () => {
-    setDragState(null);
+  const handleMouseDownResize = (e: React.MouseEvent, win: WindowState, edge: ResizeEdge) => {
+    e.stopPropagation();
+    if (win.isMaximized || e.button !== 0) return;
+    e.preventDefault();
+    onFocusWindow(win.id);
+    beginInteraction(
+      {
+        kind: 'resize',
+        windowId: win.id,
+        edge,
+        startX: e.clientX,
+        startY: e.clientY,
+        initialX: win.x,
+        initialY: win.y,
+        initialWidth: win.width,
+        initialHeight: win.height,
+      },
+      RESIZE_CURSOR[edge]
+    );
   };
 
   const renderAppContent = (win: WindowState) => {
@@ -156,11 +308,7 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
   };
 
   return (
-    <div
-      className="absolute inset-0 pointer-events-none overflow-hidden z-20"
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-    >
+    <div className="absolute inset-0 pointer-events-none overflow-hidden z-20">
       {windows.map((win) => {
         if (win.isMinimized) return null;
         const isActive = win.id === activeWindowId;
@@ -193,9 +341,22 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
           };
         }
 
+        const handlePosition: Record<ResizeEdge, React.CSSProperties> = {
+          n: { top: 0, left: 8, right: 8, height: 5, cursor: RESIZE_CURSOR.n },
+          s: { bottom: 0, left: 8, right: 8, height: 5, cursor: RESIZE_CURSOR.s },
+          w: { left: 0, top: 8, bottom: 8, width: 5, cursor: RESIZE_CURSOR.w },
+          e: { right: 0, top: 8, bottom: 8, width: 5, cursor: RESIZE_CURSOR.e },
+          nw: { top: 0, left: 0, width: 12, height: 12, cursor: RESIZE_CURSOR.nw },
+          ne: { top: 0, right: 0, width: 12, height: 12, cursor: RESIZE_CURSOR.ne },
+          sw: { bottom: 0, left: 0, width: 12, height: 12, cursor: RESIZE_CURSOR.sw },
+          se: { bottom: 0, right: 0, width: 12, height: 12, cursor: RESIZE_CURSOR.se },
+        };
+
         return (
           <div
             key={win.id}
+            role="dialog"
+            aria-label={win.title}
             onMouseDown={() => onFocusWindow(win.id)}
             className={`absolute pointer-events-auto flex flex-col rounded-xl overflow-hidden transition-[box-shadow,border-color] duration-150 border ${
               acrylicEnabled ? 'glass-acrylic' : ''
@@ -274,6 +435,19 @@ export const WindowManager: React.FC<WindowManagerProps> = ({
             <div className="flex-1 overflow-hidden relative">
               {renderAppContent(win)}
             </div>
+
+            {/* Resize handles (hidden while maximized) */}
+            {!win.isMaximized &&
+              RESIZE_HANDLES.map((edge) => (
+                <div
+                  key={edge}
+                  aria-hidden="true"
+                  data-resize-edge={edge}
+                  onMouseDown={(e) => handleMouseDownResize(e, win, edge)}
+                  className="absolute z-10 transition-colors hover:bg-accent-soft"
+                  style={handlePosition[edge]}
+                />
+              ))}
           </div>
         );
       })}
