@@ -355,7 +355,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           >
             <IconBellFilled className="w-4 h-4 text-slate-600 dark:text-slate-300" />
             {unreadNotificationsCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-600" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-accent" />
             )}
           </button>
 

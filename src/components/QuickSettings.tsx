@@ -190,7 +190,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
             onClick={() => setWifiEnabled(!wifiEnabled)}
             className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors text-xs ${
               wifiEnabled
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-accent text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10'
             }`}
           >
@@ -204,7 +204,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
             onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
             className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors text-xs ${
               bluetoothEnabled
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-accent text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10'
             }`}
           >
@@ -228,7 +228,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
             onClick={onToggleAcrylic}
             className={`flex flex-col items-center justify-center p-2 rounded-xl transition-colors text-xs ${
               acrylicEnabled
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-accent text-white shadow-xs'
                 : 'bg-slate-100 dark:bg-white/5 border border-slate-200/80 dark:border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-200/80 dark:hover:bg-white/10'
             }`}
           >
@@ -277,7 +277,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
               max="100"
               value={brightness}
               onChange={(e) => setBrightness(Number(e.target.value))}
-              className="flex-1 accent-blue-600 h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
+              className="flex-1 accent-accent h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
             />
             <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 w-7 text-right">{brightness}%</span>
           </div>
@@ -291,7 +291,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
               max="100"
               value={volume}
               onChange={(e) => setVolume(Number(e.target.value))}
-              className="flex-1 accent-blue-600 h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
+              className="flex-1 accent-accent h-1.5 rounded-lg cursor-pointer bg-slate-300 dark:bg-slate-700"
             />
             <span className="text-[11px] font-mono text-slate-600 dark:text-slate-400 w-7 text-right">{volume}%</span>
           </div>
@@ -300,7 +300,7 @@ export const QuickSettings: React.FC<QuickSettingsProps> = ({
         {/* Media Player */}
         <div className="p-2.5 rounded-xl bg-slate-100/90 dark:bg-black/20 border border-slate-200/80 dark:border-white/5 flex items-center justify-between mb-3">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-blue-600/10 dark:bg-slate-700 flex items-center justify-center text-blue-600 dark:text-slate-200 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-accent-soft dark:bg-slate-700 flex items-center justify-center text-accent dark:text-slate-200 shrink-0">
               <Music className="w-4 h-4" />
             </div>
             <div className="min-w-0">

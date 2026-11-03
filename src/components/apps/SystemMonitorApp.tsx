@@ -93,7 +93,7 @@ export const SystemMonitorApp: React.FC<{ accentColor: string }> = ({ accentColo
             <span className="text-lg font-bold font-mono text-slate-900 dark:text-white">{cpuUsage}%</span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">16 núcleos @ 5.1GHz</span>
           </div>
-          <div className="w-9 h-9 rounded-lg bg-blue-500/15 dark:bg-blue-600/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+          <div className="w-9 h-9 rounded-lg bg-accent-soft flex items-center justify-center text-accent">
             <Cpu className="w-5 h-5" />
           </div>
         </div>
@@ -185,7 +185,7 @@ export const SystemMonitorApp: React.FC<{ accentColor: string }> = ({ accentColo
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar processo, PID ou usuário..."
-            className="w-full pl-8 pr-7 py-1 text-xs rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1.5 focus:ring-blue-500/50 transition-all font-sans"
+            className="w-full pl-8 pr-7 py-1 text-xs rounded-lg bg-slate-100 dark:bg-white/10 border border-slate-200/80 dark:border-white/10 text-slate-800 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1.5 focus:ring-accent transition-all font-sans"
           />
           {searchQuery && (
             <button
@@ -234,7 +234,7 @@ export const SystemMonitorApp: React.FC<{ accentColor: string }> = ({ accentColo
                   setSearchQuery('');
                   setCategory('all');
                 }}
-                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-lg bg-blue-500/15 dark:bg-blue-600/25 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 transition-colors font-medium"
+                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 text-xs rounded-lg bg-accent-soft text-accent hover:bg-accent-strong transition-colors font-medium"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Restaurar filtros</span>
@@ -260,7 +260,7 @@ export const SystemMonitorApp: React.FC<{ accentColor: string }> = ({ accentColo
                     <span
                       className={`text-[9px] px-1.5 py-0.2 rounded font-sans uppercase font-bold shrink-0 tracking-wide ${
                         isUser
-                          ? 'bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-300'
+                          ? 'bg-accent-soft text-accent dark:bg-accent-strong'
                           : 'bg-slate-500/10 text-slate-600 dark:bg-white/10 dark:text-slate-400'
                       }`}
                     >

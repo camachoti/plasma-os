@@ -109,7 +109,7 @@ export const DesktopIcons: React.FC<DesktopIconsProps> = ({
             }}
             className={`group flex flex-col items-center justify-center ${sizeConfig.tileClass} rounded-xl transition-all duration-150 text-center select-none ${
               isSelected
-                ? 'bg-blue-600/35 backdrop-blur-md ring-1.5 ring-blue-400/80'
+                ? 'bg-accent-tint backdrop-blur-md ring-1.5 ring-accent'
                 : 'hover:bg-white/10 active:bg-white/15'
             }`}
           >

@@ -171,7 +171,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
           <div
             className={`flex items-center justify-between px-2 py-1.5 rounded-lg transition-colors cursor-pointer ${
               currentPath === '/home/debian'
-                ? 'bg-blue-600/15 border border-blue-500/30 text-blue-700 dark:text-white font-semibold dark:bg-blue-600/30 dark:border-transparent'
+                ? 'bg-accent-soft border border-accent-soft text-slate-900 dark:text-white font-semibold dark:bg-accent-strong dark:border-transparent'
                 : 'text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-white/5'
             }`}
             onClick={() => setCurrentPath('/home/debian')}
@@ -198,7 +198,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                 onClick={() => setCurrentPath('/home/debian/Documentos')}
                 className={`flex items-center gap-2 px-2.5 py-1 rounded-md text-left transition-colors text-[11px] ${
                   currentPath === '/home/debian/Documentos'
-                    ? 'bg-blue-500/20 text-blue-700 dark:text-white font-semibold'
+                    ? 'bg-accent-soft text-slate-900 dark:text-white font-semibold'
                     : 'text-slate-600 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-white/5'
                 }`}
               >
@@ -210,7 +210,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                 onClick={() => setCurrentPath('/home/debian/Downloads')}
                 className={`flex items-center gap-2 px-2.5 py-1 rounded-md text-left transition-colors text-[11px] ${
                   currentPath === '/home/debian/Downloads'
-                    ? 'bg-blue-500/20 text-blue-700 dark:text-white font-semibold'
+                    ? 'bg-accent-soft text-slate-900 dark:text-white font-semibold'
                     : 'text-slate-600 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-white/5'
                 }`}
               >
@@ -222,7 +222,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                 onClick={() => setCurrentPath('/home/debian/Imagens')}
                 className={`flex items-center gap-2 px-2.5 py-1 rounded-md text-left transition-colors text-[11px] ${
                   currentPath === '/home/debian/Imagens'
-                    ? 'bg-blue-500/20 text-blue-700 dark:text-white font-semibold'
+                    ? 'bg-accent-soft text-slate-900 dark:text-white font-semibold'
                     : 'text-slate-600 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-white/5'
                 }`}
               >
@@ -234,7 +234,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                 onClick={() => setCurrentPath('/home/debian/Música')}
                 className={`flex items-center gap-2 px-2.5 py-1 rounded-md text-left transition-colors text-[11px] ${
                   currentPath === '/home/debian/Música'
-                    ? 'bg-blue-500/20 text-blue-700 dark:text-white font-semibold'
+                    ? 'bg-accent-soft text-slate-900 dark:text-white font-semibold'
                     : 'text-slate-600 hover:bg-slate-200/50 dark:text-slate-400 dark:hover:bg-white/5'
                 }`}
               >
@@ -254,7 +254,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
           <div
             className={`flex items-center justify-between px-2 py-1.5 rounded-lg transition-colors cursor-pointer ${
               currentPath === '/'
-                ? 'bg-blue-600/15 border border-blue-500/30 text-blue-700 dark:text-white font-semibold dark:bg-blue-600/30 dark:border-transparent'
+                ? 'bg-accent-soft border border-accent-soft text-slate-900 dark:text-white font-semibold dark:bg-accent-strong dark:border-transparent'
                 : 'text-slate-700 hover:bg-slate-200/60 dark:text-slate-300 dark:hover:bg-white/5'
             }`}
             onClick={() => setCurrentPath('/')}
@@ -290,8 +290,8 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
         onMouseDown={handleStartResize}
         className={`w-1 cursor-col-resize hover:w-1.5 transition-all relative flex items-center justify-center shrink-0 select-none group z-10 ${
           isResizingSidebar
-            ? 'bg-blue-500 w-1.5'
-            : 'bg-slate-200/90 dark:bg-white/10 hover:bg-blue-400'
+            ? 'bg-accent w-1.5'
+            : 'bg-slate-200/90 dark:bg-white/10 hover:bg-accent-soft'
         }`}
         title="Arraste para redimensionar a estrutura de pastas lateral"
       >
@@ -306,7 +306,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-transparent text-xs font-mono text-slate-700 dark:text-slate-300">
             <span
               onClick={() => setCurrentPath('/')}
-              className="cursor-pointer hover:text-blue-600"
+              className="cursor-pointer hover:text-accent"
             >
               /
             </span>
@@ -321,7 +321,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                     className={`cursor-pointer ${
                       isLast
                         ? 'text-slate-900 dark:text-white font-semibold'
-                        : 'hover:text-blue-600'
+                        : 'hover:text-accent'
                     }`}
                   >
                     {part}
@@ -340,7 +340,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                 placeholder="Buscar arquivos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 pr-3 py-1 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 w-36 sm:w-44"
+                className="pl-8 pr-3 py-1 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-accent w-36 sm:w-44"
               />
             </div>
 
@@ -447,7 +447,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                     }}
                     className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all ${
                       isSelected
-                        ? 'bg-blue-600/15 border-blue-500 shadow-xs ring-1 ring-blue-500/50'
+                        ? 'bg-accent-soft border-accent shadow-xs ring-1 ring-accent'
                         : 'border-transparent hover:bg-slate-100/80 dark:hover:bg-white/5'
                     }`}
                   >
@@ -492,7 +492,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
                     }}
                     className={`px-3 py-2 flex items-center justify-between rounded-lg cursor-pointer transition-colors ${
                       isSelected
-                        ? 'bg-blue-600/20 text-blue-900 dark:text-white'
+                        ? 'bg-accent-soft text-slate-900 dark:text-white'
                         : 'hover:bg-slate-100/80 dark:hover:bg-white/5 text-slate-800 dark:text-slate-200'
                     }`}
                   >
@@ -522,7 +522,7 @@ export const FileManagerApp: React.FC<{ accentColor: string }> = ({ accentColor 
         <div className="px-3 py-1.5 border-t border-slate-200/80 dark:border-white/10 bg-slate-100/80 dark:bg-black/25 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 shrink-0 font-mono">
           <div className="flex items-center gap-2">
             <span>{filteredFiles.length} itens</span>
-            {selectedFileId && <span className="text-blue-600 dark:text-blue-400 font-semibold">• 1 selecionado</span>}
+            {selectedFileId && <span className="text-accent font-semibold">• 1 selecionado</span>}
           </div>
           <div className="flex items-center gap-2 text-[10px] font-sans">
             <span>Painel: {sidebarWidth}px</span>

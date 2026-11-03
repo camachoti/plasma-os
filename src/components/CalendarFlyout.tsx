@@ -217,7 +217,7 @@ export const CalendarFlyout: React.FC<CalendarFlyoutProps> = ({
                 key={dayNum}
                 className={`py-1 text-[11px] rounded-lg transition-colors cursor-pointer ${
                   isToday
-                    ? 'bg-blue-600 text-white font-bold shadow-xs'
+                    ? 'bg-accent text-white font-bold shadow-xs'
                     : 'text-slate-700 dark:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-white/10'
                 }`}
               >

@@ -273,7 +273,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
               placeholder="Buscar aplicativos ou configurações..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-white/15 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 backdrop-blur-md"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/10 border border-white/15 text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-accent backdrop-blur-md"
             />
           </div>
 
@@ -334,7 +334,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                 placeholder="Pesquisar aplicativos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full pl-9 pr-3 py-1.5 rounded-lg bg-slate-100 dark:bg-black/20 border border-slate-200/80 dark:border-white/10 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
           </div>
@@ -354,7 +354,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
                     onClick={() => setSelectedCategory(cat)}
                     className={`text-left text-xs px-2 py-1.5 rounded-lg transition-colors font-medium ${
                       isActive
-                        ? 'bg-blue-600/15 border border-blue-500/30 text-blue-700 dark:text-white dark:bg-blue-600/30 dark:border-transparent font-semibold'
+                        ? 'bg-accent-soft border border-accent-soft text-slate-900 dark:text-white dark:bg-accent-strong dark:border-transparent font-semibold'
                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5'
                     }`}
                   >
@@ -394,7 +394,7 @@ export const StartMenu: React.FC<StartMenuProps> = ({
           {/* Footer: User profile + System controls */}
           <div className="pt-2.5 border-t border-slate-200/80 dark:border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+              <div className="w-7 h-7 rounded-full bg-accent text-white font-bold text-xs flex items-center justify-center">
                 D
               </div>
               <div>

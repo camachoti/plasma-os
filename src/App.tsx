@@ -137,6 +137,12 @@ export default function App() {
     }
   }, [isDark]);
 
+  // Publish the selected accent color as a CSS variable so every
+  // bg-accent / text-accent / border-accent utility follows it
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent-color', accentColor);
+  }, [accentColor]);
+
   // Keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
